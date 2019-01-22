@@ -1,0 +1,6 @@
+# Configuration for moving files between your working directory and the git database.
+
+* text=auto eol=lf
+
+*.css   text  eol=lf  diff=css
+*.html  text  eol=lf  diff=html
