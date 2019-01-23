@@ -15,7 +15,7 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
 ```js
 import pogo from 'https://raw.githubusercontent.com/sholladay/pogo/master/main.js';
 
-const app = pogo.server();
+const app = pogo.server({ port : 3000 });
 
 app.route({
     method : 'GET',
@@ -49,7 +49,7 @@ Specifies which domain or IP address to listen on. Use `0.0.0.0` to listen on an
 
 ##### port
 
-Type: 'number'<br>
+Type: `number`<br>
 Example: `3000`
 
 Specifies which port number to listen on.

@@ -3,7 +3,10 @@ import respond from './lib/respond.js';
 
 class Pogo {
     constructor(option) {
-        this._config = option;
+        this._config = {
+            hostname : 'localhost',
+            ...option
+        };
         this.router = {};
     }
     route(option) {
