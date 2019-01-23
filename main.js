@@ -48,6 +48,8 @@ class Pogo {
     }
 }
 
-export const server = (...args) => {
-    return new Pogo(...args);
+export default {
+    server(...args) {
+        return new Pogo(...args);
+    }
 };
