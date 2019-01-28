@@ -1,5 +1,6 @@
 import { http } from './dependencies.js';
 import respond from './lib/respond.js';
+import Toolkit from './lib/toolkit.js';
 
 class Pogo {
     constructor(option) {
@@ -29,13 +30,16 @@ class Pogo {
         }
         let result;
         try {
-            result = await route.handler(request);
+            result = await route.handler(request, new Toolkit());
         }
         catch (error) {
             await respond.badImplementation(request);
             return;
         }
-        if (result) {
+        if (result instanceof Toolkit) {
+            await respond(request, result._response);
+        }
+        else if (result) {
             await respond(request, { body : result });
         }
         else {
