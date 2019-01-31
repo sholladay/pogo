@@ -34,7 +34,7 @@ app.start();
 
 ### server = pogo.server(option)
 
-Returns a server instance, which can be used to add routes and
+Returns a server instance, which can then be used to add routes and start listening for requests.
 
 #### option
 
@@ -45,18 +45,18 @@ Type: `object`
 Type: `string`<br>
 Default: `localhost`
 
-Specifies which domain or IP address to listen on. Use `0.0.0.0` to listen on any hostname.
+Specifies which domain or IP address the server will listen on when `server.start()` is called. Use `0.0.0.0` to listen on any hostname.
 
 ##### port
 
 Type: `number`<br>
 Example: `3000`
 
-Specifies which port number to listen on.
+Specifies which port number the server will listen on when `server.start()` is called. Use `0` to listen on any available port.
 
 ### server.route(option)
 
-Adds a route to the server so that the server knows how to respond to requests for the given route.
+Adds a route to the server so that the server knows how to respond to requests for the given HTTP method and path, etc.
 
 #### option
 
