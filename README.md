@@ -1,8 +1,16 @@
 # pogo [![Build status for Pogo](https://travis-ci.com/sholladay/pogo.svg?branch=master "Build Status")](https://travis-ci.com/sholladay/pogo "Builds")
 
-> Web framework for [Deno](https://github.com/denoland/deno)
+> Server framework for [Deno](https://github.com/denoland/deno)
 
 Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
+
+## Contents
+
+ - [Why?](#why)
+ - [Usage](#usage)
+ - [API](#api)
+ - [Contributing](#contributing)
+ - [License](#license)
 
 ## Why?
 
@@ -13,7 +21,7 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
 ## Usage
 
 ```js
-import pogo from 'https://denopkg.com/sholladay/pogo@v0.1.0/main.js';
+import pogo from 'https://deno.land/x/pogo/main.js';
 
 const app = pogo.server({ port : 3000 });
 
@@ -28,9 +36,22 @@ app.route({
 app.start();
 ```
 
-*Note: This project is experimental. It works as documented, but the API is limited. Issues and PRs are welcome!*
-
 ## API
+
+ - [`server = pogo.server(option)`](#server--pogoserveroption)
+ - [`server.route(option)`](#serverrouteoption)
+ - [`server.start()`](#serverstart)
+ - [Response Toolkit](#response-toolkit)
+ - - [`h.body(body)`](#hbodybody)
+ - - [`h.code(statusCode)`](#hcodestatuscode)
+ - - [`h.created(url)`](#hcreatedurl)
+ - - [`h.header(name, value)`](#hheadername-value)
+ - - [`h.location(url)`](#hlocationurl)
+ - - [`h.permanent()`](#hpermanent)
+ - - [`h.redirect(url)`](#hredirecturl)
+ - - [`h.rewritable(isRewritable)`](#hrewritableisrewritable)
+ - - [`h.temporary()`](#htemporary)
+ - - [`h.type(mediaType)](#htypemediatype)
 
 ### server = pogo.server(option)
 
@@ -74,18 +95,23 @@ Any valid HTTP method. Used to limit which requests will trigger the route handl
 Type: `string`<br>
 Example: `/`
 
-Any valid URL path. used to limit which requests will trigger the route handler.
+Any valid URL path. Used to limit which requests will trigger the route handler.
 
 ##### handler(request, h)
 
 Type: `function`
 
  - `request` is a [ServerRequest](https://github.com/denoland/deno_std/blob/e28c9a407951f10d952993ff6a7b248ca11243e1/http/http.ts#L123-L274) instance with properties for `headers`, `method`, `url`, and more.
- - `h` is a response toolkit with methods
+ - `h` is a [Response Toolkit](#response-toolkit) instance, which has utility methods for modifying the response.
 
-The implementation for the route that handles requests. Called when a request is received that matches the `method` and `path` specified in the route configuration.
+The implementation for the route that handles requests. Called when a request is received that matches the `method` and `path` specified in the route options.
 
-Should return a string or object. Strings are sent as HTML, objects are sent as JSON (using `JSON.stringify()`). In either case, an appropriate `Content-Type` header will be sent.
+Should return one of:
+ - A `string`, which will be sent as HTML.
+ - A JSON value, which will be sent as JSON using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
+ - A [Response Toolkit](#response-toolkit) instance.
+
+An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.header()`](#hheadername-value) to override the default behavior.
 
 ### server.start()
 
@@ -103,20 +129,20 @@ Sets the response body. This is the same as returning the body directly from the
 
 #### h.code(statusCode)
 
-Sets the response status code. Whenever possible, it would be better to use a more specific method instead, such as `h.redirect()`.
+Sets the response status code. When possible, it is better to use a more specific method instead, such as [`h.redirect()`](#hredirecturl).
 
 *Tip: Use Deno's `status` constants to define the status code.*
 
 ```js
 import { Status as status } from 'https://deno.land/x/http/http_status.ts';
 const handler = (request, h) => {
-    return h.status(status.Teapot);
+    return h.code(status.Teapot);
 };
 ```
 
 #### h.created(url)
 
-Sets the response status to `201 Created` and sets the `Location` header to the value of `url`.
+Sets the response status to [`201 Created`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`.
 
 Returns the toolkit so other methods can be chained.
 
@@ -128,19 +154,7 @@ Returns the toolkit so other methods can be chained.
 
 #### h.location(url)
 
-Sets the `Location` header on the response.
-
-Returns the toolkit so other methods can be chained.
-
-#### h.redirect(url)
-
-Sets the response status to `302 Found` and sets the `Location` header to the value of `url`.
-
-Also causes some new toolkit methods to become available for customizing the redirect behavior:
-
- - `h.permanent()`
- - `h.temporary()`
- - `h.rewritable()`
+Sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header on the response to the value of `url`. When possible, it is better to use a more specific method instead, such as [`h.created()`](#hcreatedurl) or [`h.redirect()`](#hredirecturl).
 
 Returns the toolkit so other methods can be chained.
 
@@ -148,15 +162,19 @@ Returns the toolkit so other methods can be chained.
 
 *Only available after calling the h.redirect() method.*
 
-Sets the response status to `301 Moved Permanently` or `308 Permanent Redirect` based on whether the existing status is considered `rewritable`.
+Sets the response status to [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) or [`308 Permanent Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308) based on whether the existing status is considered rewritable (see "method handling" on [Redirections in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections) for details).
 
 Returns the toolkit so other methods can be chained.
 
-#### h.temporary()
+#### h.redirect(url)
 
-*Only available after calling the h.redirect() method.*
+Sets the response status to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`.
 
-Sets the response status to `302 Found` or `307 Temporary Redirect` based on whether the existing status is considered `rewritable`.
+Also causes some new toolkit methods to become available for customizing the redirect behavior:
+
+ - [`h.permanent()`](#hpermanent)
+ - [`h.temporary()`](#htemporary)
+ - [`h.rewritable()`](#hrewritableisrewritable)
 
 Returns the toolkit so other methods can be chained.
 
@@ -164,7 +182,23 @@ Returns the toolkit so other methods can be chained.
 
 *Only available after calling the h.redirect() method.*
 
-Sets the response status to `301 Moved Permanently` or `302 Found` based on whether the existing status is a permanent or temporary redirect code. If `isRewritable` is `false`, then the response status will be set to `307 Temporary Redirect` or `308 Permanent Redirect`.
+Sets the response status to [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) or [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) based on whether the existing status is a permanent or temporary redirect code. If `isRewritable` is `false`, then the response status will be set to [`307 Temporary Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307) or [`308 Permanent Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308).
+
+Returns the toolkit so other methods can be chained.
+
+#### h.temporary()
+
+*Only available after calling the h.redirect() method.*
+
+Sets the response status to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) or [`307 Temporary Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307) based on whether the existing status is considered rewritable (see "method handling" on [Redirections in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections) for details).
+
+Returns the toolkit so other methods can be chained.
+
+#### h.type(mediaType)
+
+Sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header on the response to the value of `mediaType`.
+
+Overrides the media type that is set automatically by the framework.
 
 Returns the toolkit so other methods can be chained.
 
