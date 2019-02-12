@@ -1,4 +1,4 @@
-import { assert, test } from 'https://deno.land/x/std/testing/mod.ts';
+import { assert, runTests, test } from 'https://deno.land/x/std/testing/mod.ts';
 import respond from './lib/respond.js';
 
 test(async function respondsHtml() {
@@ -30,3 +30,5 @@ test(async function respondsJson() {
     });
     assert.strictEqual(called, true);
 });
+
+runTests();
