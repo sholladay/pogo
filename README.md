@@ -42,16 +42,16 @@ app.start();
  - [`server.route(option)`](#serverrouteoption)
  - [`server.start()`](#serverstart)
  - [Response Toolkit](#response-toolkit)
- - - [`h.body(body)`](#hbodybody)
- - - [`h.code(statusCode)`](#hcodestatuscode)
- - - [`h.created(url)`](#hcreatedurl)
- - - [`h.header(name, value)`](#hheadername-value)
- - - [`h.location(url)`](#hlocationurl)
- - - [`h.permanent()`](#hpermanent)
- - - [`h.redirect(url)`](#hredirecturl)
- - - [`h.rewritable(isRewritable)`](#hrewritableisrewritable)
- - - [`h.temporary()`](#htemporary)
- - - [`h.type(mediaType)](#htypemediatype)
+   - [`h.body(body)`](#hbodybody)
+   - [`h.code(statusCode)`](#hcodestatuscode)
+   - [`h.created(url)`](#hcreatedurl)
+   - [`h.header(name, value)`](#hheadername-value)
+   - [`h.location(url)`](#hlocationurl)
+   - [`h.permanent()`](#hpermanent)
+   - [`h.redirect(url)`](#hredirecturl)
+   - [`h.rewritable(isRewritable)`](#hrewritableisrewritable)
+   - [`h.temporary()`](#htemporary)
+   - [`h.type(mediaType)`](#htypemediatype)
 
 ### server = pogo.server(option)
 
@@ -109,9 +109,9 @@ The implementation for the route that handles requests. Called when a request is
 Should return one of:
  - A `string`, which will be sent as HTML.
  - A JSON value, which will be sent as JSON using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
- - A [Response Toolkit](#response-toolkit) instance.
+ - A [Response Toolkit](#response-toolkit) instance, which will send the `h.body()` value, if any.
 
-An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.header()`](#hheadername-value) to override the default behavior.
+An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.type()`](#htypemediatype) to override the default behavior.
 
 ### server.start()
 
