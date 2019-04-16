@@ -1,4 +1,5 @@
-import { assert, runTests, test } from 'https://deno.land/x/std/testing/mod.ts';
+import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.3.4/testing/asserts.ts';
+import { runTests, test } from 'https://deno.land/std@v0.3.4/testing/mod.ts';
 import respond from './lib/respond.js';
 
 test(async function respondsHtml() {
@@ -6,12 +7,12 @@ test(async function respondsHtml() {
     const fakeRequest = {
         respond(config) {
             called = true;
-            assert.equal(config.body, new TextEncoder().encode('hi'));
-            assert.strictEqual(config.headers.get('Content-Type'), 'text/html; charset=utf-8');
+            assertEquals(config.body, new TextEncoder().encode('hi'));
+            assertStrictEq(config.headers.get('Content-Type'), 'text/html; charset=utf-8');
         }
     };
     await respond(fakeRequest, { body : 'hi' });
-    assert.strictEqual(called, true);
+    assertStrictEq(called, true);
 });
 
 test(async function respondsJson() {
@@ -19,8 +20,8 @@ test(async function respondsJson() {
     const fakeRequest = {
         respond(config) {
             called = true;
-            assert.equal(config.body, new TextEncoder().encode(JSON.stringify({ foo : 'bar' })));
-            assert.strictEqual(config.headers.get('Content-Type'), 'application/json; charset=utf-8');
+            assertEquals(config.body, new TextEncoder().encode(JSON.stringify({ foo : 'bar' })));
+            assertStrictEq(config.headers.get('Content-Type'), 'application/json; charset=utf-8');
         }
     };
     await respond(fakeRequest, {
@@ -28,7 +29,7 @@ test(async function respondsJson() {
             foo : 'bar'
         }
     });
-    assert.strictEqual(called, true);
+    assertStrictEq(called, true);
 });
 
 runTests();
