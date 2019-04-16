@@ -15,6 +15,7 @@ class Pogo {
             if (typeof config.handler !== 'function') {
                 throw new TypeError('route.handler must be a function');
             }
+
             this.router[config.method] = this.router[config.method] || {};
             this.router[config.method][config.path] = config;
         }
@@ -28,6 +29,7 @@ class Pogo {
             await respond.notFound(request);
             return;
         }
+
         let result;
         try {
             result = await route.handler(request, new Toolkit());
@@ -36,6 +38,7 @@ class Pogo {
             await respond.badImplementation(request);
             return;
         }
+
         if (result instanceof Toolkit) {
             await respond(request, result._response);
         }
