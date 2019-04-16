@@ -1,5 +1,5 @@
-import { assertEquals, assertStrictEq } from 'https://deno.land/x/std@61af419bbc5717c2e2552050aacb20ef1b17480b/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/x/std@61af419bbc5717c2e2552050aacb20ef1b17480b/testing/mod.ts';
+import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.3.4/testing/asserts.ts';
+import { runTests, test } from 'https://deno.land/std@v0.3.4/testing/mod.ts';
 import respond from './lib/respond.js';
 
 test(async function respondsHtml() {
