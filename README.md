@@ -4,6 +4,8 @@
 
 Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
+*Supports Deno v0.3.0 and higher*
+
 ## Contents
 
  - [Why?](#why)
@@ -27,7 +29,7 @@ const app = pogo.server({ port : 3000 });
 
 app.route({
     method : 'GET',
-    path   : '/hello',
+    path   : '/',
     handler() {
         return 'Hello, world!';
     }
