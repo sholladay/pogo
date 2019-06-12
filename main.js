@@ -53,7 +53,7 @@ class Pogo {
         const host = this._config.hostname + ':' + this._config.port;
         const server = http.serve(host);
         for await (const request of server) {
-            await this._handleRequest(request);
+            this._handleRequest(request);
         }
     }
 }
