@@ -1,8 +1,8 @@
-import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.3.4/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/std@v0.3.4/testing/mod.ts';
+import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.17.0/testing/asserts.ts';
+import { runTests, test } from 'https://deno.land/std@v0.17.0/testing/mod.ts';
 import respond from './lib/respond.js';
 
-test(async function respondsHtml() {
+test('responds with HTML', async () => {
     let called = false;
     const fakeRequest = {
         respond(config) {
@@ -15,7 +15,7 @@ test(async function respondsHtml() {
     assertStrictEq(called, true);
 });
 
-test(async function respondsJson() {
+test('responds with JSON', async () => {
     let called = false;
     const fakeRequest = {
         respond(config) {
