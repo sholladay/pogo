@@ -10,24 +10,23 @@ class Pogo {
         };
         this.router = {};
     }
-    route(option) {
-        for (const config of [].concat(option)) {
-            if (typeof config.handler !== 'function') {
+    route(routes) {
+        for (const route of [].concat(routes)) {
+            if (typeof route.handler !== 'function') {
                 throw new TypeError('route.handler must be a function');
             }
 
-            this.router[config.method] = this.router[config.method] || {};
-            this.router[config.method][config.path] = config;
+            this.router[route.method] = this.router[route.method] || {};
+            this.router[route.method][route.path] = route;
         }
     }
-    async _handleRequest(request) {
+    async inject(request) {
         console.log(`Request: ${new Date().toISOString()} ${request.method} ${request.url}`);
 
         const methodRouter = this.router[request.method];
         const route = methodRouter && methodRouter[request.url];
         if (!route) {
-            await respond.notFound(request);
-            return;
+            return respond.notFound(request);
         }
 
         let result;
@@ -35,25 +34,28 @@ class Pogo {
             result = await route.handler(request, new Toolkit());
         }
         catch (error) {
-            await respond.badImplementation(request);
-            return;
+            return respond.badImplementation(request);
         }
 
         if (result instanceof Toolkit) {
-            await respond(request, result._response);
+            return respond(request, result._response);
         }
         else if (result) {
-            await respond(request, { body : result });
+            return respond(request, { body : result });
         }
         else {
-            await respond.badImplementation(request);
+            return respond.badImplementation(request);
         }
+    }
+    async respond(request) {
+        const response = await this.inject(request);
+        request.respond(response);
     }
     async start() {
         const host = this._config.hostname + ':' + this._config.port;
         const server = http.serve(host);
         for await (const request of server) {
-            this._handleRequest(request);
+            this.respond(request);
         }
     }
 }
