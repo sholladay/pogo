@@ -90,14 +90,16 @@ Type: `object`
 Type: `string`<br>
 Example: `GET`
 
-Any valid HTTP method. Used to limit which requests will trigger the route handler.
+Any valid HTTP method, or `*` to match all methods. Used to limit which requests will trigger the route handler.
 
 ##### path
 
 Type: `string`<br>
-Example: `/`
+Example: `/users/{userId}`
 
 Any valid URL path. Used to limit which requests will trigger the route handler.
+
+Supports path parameters with dynamic values, which can be accessed in the handler as `request.params`.
 
 ##### handler(request, h)
 
@@ -108,10 +110,12 @@ Type: `function`
 
 The implementation for the route that handles requests. Called when a request is received that matches the `method` and `path` specified in the route options.
 
-Should return one of:
+The handler must return one of:
  - A `string`, which will be sent as HTML.
- - A JSON value, which will be sent as JSON using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
- - A [Response Toolkit](#response-toolkit) instance, which will send the `h.body()` value, if any.
+ - An `object`, which will be [`stringified`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) sent as JSON.
+ - A `Uint8Array`, which will be sent as-is (raw bytes).
+ - A [Response Toolkit](#response-toolkit) instance, which will send the value given to `h.body()`, if any.
+ - Any object that implements the [`Reader`](https://deno.land/typedoc/interfaces/_deno_.reader.html) interface, such as a [`File`](https://deno.land/typedoc/classes/_deno_.file.html) or [`Buffer`](https://deno.land/typedoc/classes/_deno_.buffer.html) instance.
 
 An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.type()`](#htypemediatype) to override the default behavior.
 
