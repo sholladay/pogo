@@ -41,6 +41,7 @@ app.start();
 ## API
 
  - [`server = pogo.server(option)`](#server--pogoserveroption)
+ - [`server.inject(request)](#serverinjectrequest)
  - [`server.route(option)`](#serverrouteoption)
  - [`server.start()`](#serverstart)
  - [Response Toolkit](#response-toolkit)
@@ -76,6 +77,22 @@ Type: `number`<br>
 Example: `3000`
 
 Specifies which port number the server will listen on when `server.start()` is called. Use `0` to listen on any available port.
+
+### server.inject(request)
+
+Performs a request directly to the server without using the network. Useful when writing tests, to avoid conflicts from multiple servers trying to listen on the same port number.
+
+#### request
+
+Type: `object`
+
+##### method
+
+Any valid HTTP method, such as `GET` or `POST`. Used to lookup the route handler.
+
+##### url
+
+Any valid URL path. Used to lookup the route handler.
 
 ### server.route(option)
 
