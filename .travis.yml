@@ -5,4 +5,5 @@ install:
   - export PATH="$HOME/.deno/bin:$PATH"
 
 script:
-  - deno test.js
+  - deno test/server.js
+  - deno test/router.js

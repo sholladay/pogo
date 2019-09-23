@@ -40,10 +40,18 @@ app.start();
 
 ## API
 
- - [`server = pogo.server(option)`](#server--pogoserveroption)
- - [`server.inject(request)](#serverinjectrequest)
- - [`server.route(option)`](#serverrouteoption)
- - [`server.start()`](#serverstart)
+ - [Server](#server)
+   - [`server = pogo.server(option)`](#server--pogoserveroption)
+   - [`server.inject(request)`](#serverinjectrequest)
+   - [`server.route(option)`](#serverrouteoption)
+   - [`server.start()`](#serverstart)
+ - [Request](#request)
+   - [`request.body()`](#requestbody)
+   - [`request.bodyStream()`](#requestbodystream)
+   - [`request.headers`](#requestheaders)
+   - [`request.method`](#requestmethod)
+   - [`request.params`](#requestparams)
+   - [`request.url`](#requesturl)
  - [Response Toolkit](#response-toolkit)
    - [`h.body(body)`](#hbodybody)
    - [`h.code(statusCode)`](#hcodestatuscode)
@@ -56,89 +64,140 @@ app.start();
    - [`h.temporary()`](#htemporary)
    - [`h.type(mediaType)`](#htypemediatype)
 
-### server = pogo.server(option)
+### Server
+
+#### server = pogo.server(option)
 
 Returns a server instance, which can then be used to add routes and start listening for requests.
 
-#### option
+##### option
 
 Type: `object`
 
-##### hostname
+###### hostname
 
 Type: `string`<br>
-Default: `localhost`
+Default: `'localhost'`
 
 Specifies which domain or IP address the server will listen on when `server.start()` is called. Use `0.0.0.0` to listen on any hostname.
 
-##### port
+###### port
 
 Type: `number`<br>
 Example: `3000`
 
 Specifies which port number the server will listen on when `server.start()` is called. Use `0` to listen on any available port.
 
-### server.inject(request)
+#### server.inject(request)
 
 Performs a request directly to the server without using the network. Useful when writing tests, to avoid conflicts from multiple servers trying to listen on the same port number.
 
-#### request
+Returns a `Promise` for a `Response` instance.
+
+##### request
 
 Type: `object`
 
-##### method
+###### method
 
-Any valid HTTP method, such as `GET` or `POST`. Used to lookup the route handler.
+Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), such as `GET` or `POST`. Used to lookup the route handler.
 
-##### url
+###### url
 
 Any valid URL path. Used to lookup the route handler.
 
-### server.route(option)
+#### server.route(option)
 
 Adds a route to the server so that the server knows how to respond to requests for the given HTTP method and path, etc.
 
-#### option
+##### option
 
 Type: `object`
 
-##### method
+###### method
 
 Type: `string`<br>
 Example: `GET`
 
-Any valid HTTP method, or `*` to match all methods. Used to limit which requests will trigger the route handler.
+Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), or `*` to match all methods. Used to limit which requests will trigger the route handler.
 
-##### path
+###### path
 
 Type: `string`<br>
-Example: `/users/{userId}`
+Example: `'/users/{userId}'`
 
 Any valid URL path. Used to limit which requests will trigger the route handler.
 
 Supports path parameters with dynamic values, which can be accessed in the handler as `request.params`.
 
-##### handler(request, h)
+###### handler(request, h)
 
 Type: `function`
 
- - `request` is a [ServerRequest](https://github.com/denoland/deno_std/blob/e28c9a407951f10d952993ff6a7b248ca11243e1/http/http.ts#L123-L274) instance with properties for `headers`, `method`, `url`, and more.
+ - `request` is a [Request](#request) instance with properties for `headers`, `method`, `url`, and more.
  - `h` is a [Response Toolkit](#response-toolkit) instance, which has utility methods for modifying the response.
 
 The implementation for the route that handles requests. Called when a request is received that matches the `method` and `path` specified in the route options.
 
 The handler must return one of:
  - A `string`, which will be sent as HTML.
- - An `object`, which will be [`stringified`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) sent as JSON.
- - A `Uint8Array`, which will be sent as-is (raw bytes).
+ - An `object`, which will be [stringified](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and sent as JSON.
+ - A [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), which will be sent as-is (raw bytes).
  - A [Response Toolkit](#response-toolkit) instance, which will send the value given to `h.body()`, if any.
  - Any object that implements the [`Reader`](https://deno.land/typedoc/interfaces/_deno_.reader.html) interface, such as a [`File`](https://deno.land/typedoc/classes/_deno_.file.html) or [`Buffer`](https://deno.land/typedoc/classes/_deno_.buffer.html) instance.
+ - A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) for any of the above types.
 
 An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.type()`](#htypemediatype) to override the default behavior.
 
-### server.start()
+#### server.start()
 
-Begins listening on the `hostname` and `port` specified when the server was created.
+Begins listening on the [`hostname`](#hostname) and [`port`](#port) specified in the server options.
+
+Returns a `Promise` that resolves when the server is listening.
+
+### Request
+
+The `request` object passed to route handlers is an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
+
+It provides properties and methods for inspecting an HTTP request that was sent to the server.
+
+#### request.body()
+
+Returns a `Promise` for a `UInt8Array` containing the raw bytes of the request body.
+
+Note that calling this method will cause the entire body to be read into memory, which is convenient, but may be inappropriate for requests with a very large body. See [`request.bodyStream()`](#requestbodystream) to get the body as a stream, which will improve latency and lower memory usage.
+
+#### request.bodyStream()
+
+Returns an `AsyncGenerator` object, which is an async iterable and async iterator that provides the raw bytes of the request body in chunks. Useful for requests with a very large body, because streaming is low-latency and memory efficient.
+
+See [`request.body()`](#requestbody) to get the entire body all at once.
+
+#### request.headers
+
+Type: [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+
+Contains the [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) that were sent in the request, such as [`Accept`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept), [`User-Agent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent), and others.
+
+#### request.method
+
+Type: `string`<br>
+Example: `'GET'`
+
+The [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) associated with the request, such as [`GET`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) or [`POST`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+
+#### request.params
+
+Type: `object`
+
+Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding path part associated with the request.
+
+#### request.url
+
+Type: `string`<br>
+Example: `'/users/123'`
+
+The URL path associated with the request,
 
 ### Response Toolkit
 

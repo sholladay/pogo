@@ -29,10 +29,11 @@ class Pogo {
             return respond.notFound(request);
         }
 
-        const requestWithParams = { ...request, params : route.params };
+        request.params = route.params;
+
         let result;
         try {
-            result = await handler(requestWithParams, new Toolkit());
+            result = await handler(request, new Toolkit());
         }
         catch (error) {
             return respond.badImplementation(request);
