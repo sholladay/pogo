@@ -25,9 +25,9 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
 ```js
 import pogo from 'https://deno.land/x/pogo/main.js';
 
-const app = pogo.server({ port : 3000 });
+const server = pogo.server({ port : 3000 });
 
-app.route({
+server.route({
     method : 'GET',
     path   : '/',
     handler() {
@@ -35,7 +35,55 @@ app.route({
     }
 });
 
-app.start();
+server.start();
+```
+
+### Adding routes
+
+Adding routes is easy, just call [`server.route()`](#serverrouteoption) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
+
+Add routes in any order you want to, it's safe! Pogo orders them internally by specificity, such that their order of precedence is stable and predictable and avoids ambiguity or conflicts.
+
+```js
+server.route([
+    { method : 'GET', path : '/hi', handler : () => 'Hello!' },
+    { method : 'GET', path : '/bye', handler : () => 'Goodbye!' }
+});
+```
+
+```js
+server.route({ method : 'GET', path : '/hi', handler : () => 'Hello!' });
+server.route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
+```
+
+```js
+server
+    .route({ method : 'GET', path : '/hi', handler : () => 'Hello!' });
+    .route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
+```
+
+You can also configure the route to handle multiple methods by using an array, or `*` to handle all possible methods.
+
+```js
+server.route({ method : ['GET', 'POST'], path : '/hi', handler : () => 'Hello!' });
+```
+```js
+server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
+```
+
+### Writing Tests
+
+When it comes time to write tests for your app, Pogo has you covered with [`server.inject()`](serverinjectrequest).
+
+By injecting a request into the server directly, we can completely avoid the need to listen on an available port, make HTTP connections, and all of the problems and complexity that come along with that. You should focus on writing your application logic and `server.inject()` makes that easier.
+
+The server still processes the request using the same code paths that a normal HTTP request goes through, so you can rest assured that your tests are meaningful and realistic.
+
+```js
+const response = await server.inject({
+    method : 'GET',
+    url    : '/users'
+});
 ```
 
 ## API
@@ -112,7 +160,7 @@ Adds a route to the server so that the server knows how to respond to requests f
 
 ##### option
 
-Type: `object`
+Type: `object` or `array`
 
 ###### method
 
@@ -181,7 +229,7 @@ Contains the [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/He
 
 #### request.method
 
-Type: `string`<br>
+Type: `string` or `array`<br>
 Example: `'GET'`
 
 The [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) associated with the request, such as [`GET`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) or [`POST`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).

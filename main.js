@@ -16,8 +16,11 @@ class Pogo {
             if (typeof route.handler !== 'function') {
                 throw new TypeError('route.handler must be a function');
             }
-            this.router.add(route, route.handler);
+            for (const method of [].concat(route.method)) {
+                this.router.add({ ...route, method }, route.handler);
+            }
         }
+        return this;
     }
     async inject(request) {
         console.log(`Request: ${new Date().toISOString()} ${request.method} ${request.url}`);
