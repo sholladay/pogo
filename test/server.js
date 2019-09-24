@@ -4,7 +4,7 @@ import pogo from '../main.js';
 
 const encoder = new TextEncoder();
 
-test('responds with HTML', async () => {
+test('HTML response for string', async () => {
     const server = pogo.server();
     let called = false;
     server.route({
@@ -19,12 +19,12 @@ test('responds with HTML', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertEquals(response.body, encoder.encode('hi'));
-    assertStrictEq(response.headers.get('Content-Type'), 'text/html; charset=utf-8');
     assertStrictEq(called, true);
+    assertStrictEq(response.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertEquals(response.body, encoder.encode('hi'));
 });
 
-test('responds with JSON', async () => {
+test('JSON response for plain object', async () => {
     const server = pogo.server();
     let called = false;
     server.route({
@@ -39,9 +39,107 @@ test('responds with JSON', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertEquals(response.body, encoder.encode(JSON.stringify({ foo : 'bar' })));
-    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
     assertStrictEq(called, true);
+    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({ foo : 'bar' })));
+});
+
+test('JSON response for boolean', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/false',
+        handler() {
+            return false;
+        }
+    });
+    server.route({
+        method : 'GET',
+        path   : '/true',
+        handler() {
+            return true;
+        }
+    });
+    const responseFalse = await server.inject({
+        method : 'GET',
+        url    : '/false'
+    });
+    const responseTrue = await server.inject({
+        method : 'GET',
+        url    : '/true'
+    });
+    assertStrictEq(responseFalse.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(responseFalse.body, encoder.encode(JSON.stringify(false)));
+    assertStrictEq(responseTrue.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(responseTrue.body, encoder.encode(JSON.stringify(true)));
+});
+
+test('JSON response for number', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/zero',
+        handler() {
+            return 0;
+        }
+    });
+    server.route({
+        method : 'GET',
+        path   : '/one',
+        handler() {
+            return 1;
+        }
+    });
+    const responseZero = await server.inject({
+        method : 'GET',
+        url    : '/zero'
+    });
+    const responseOne = await server.inject({
+        method : 'GET',
+        url    : '/one'
+    });
+    assertStrictEq(responseZero.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(responseZero.body, encoder.encode(JSON.stringify(0)));
+    assertStrictEq(responseOne.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(responseOne.body, encoder.encode(JSON.stringify(1)));
+});
+
+test('empty response for null', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            return null;
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.headers.has('Content-Type'), false);
+    assertEquals(response.body, new Uint8Array());
+});
+
+test('error response for undefined', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            return undefined;
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 500);
+    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        error   : 'Internal Server Error',
+        message : 'An internal error occurred on the server'
+    })));
 });
 
 test('route with dynamic path', async () => {
@@ -57,8 +155,8 @@ test('route with dynamic path', async () => {
         method : 'GET',
         url    : '/users/123'
     });
-    assertEquals(response.body, encoder.encode(JSON.stringify({ userId : '123' })));
     assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({ userId : '123' })));
 });
 
 test('server.route() can be chained', async () => {
@@ -86,10 +184,10 @@ test('server.route() can be chained', async () => {
         method : 'GET',
         url    : '/b'
     });
-    assertEquals(responseA.body, encoder.encode('a'));
     assertStrictEq(responseA.headers.get('Content-Type'), 'text/html; charset=utf-8');
-    assertEquals(responseB.body, encoder.encode('b'));
+    assertEquals(responseA.body, encoder.encode('a'));
     assertStrictEq(responseB.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertEquals(responseB.body, encoder.encode('b'));
 });
 
 test('array of routes', async () => {
@@ -118,10 +216,10 @@ test('array of routes', async () => {
         method : 'GET',
         url    : '/b'
     });
-    assertEquals(responseA.body, encoder.encode('a'));
     assertStrictEq(responseA.headers.get('Content-Type'), 'text/html; charset=utf-8');
-    assertEquals(responseB.body, encoder.encode('b'));
+    assertEquals(responseA.body, encoder.encode('a'));
     assertStrictEq(responseB.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertEquals(responseB.body, encoder.encode('b'));
 });
 
 test('route with array of methods', async () => {

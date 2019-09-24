@@ -45,11 +45,8 @@ class Pogo {
         if (result instanceof Toolkit) {
             return respond(request, result._response);
         }
-        else if (result) {
-            return respond(request, { body : result });
-        }
         else {
-            return respond.badImplementation(request);
+            return respond(request, { body : result });
         }
     }
     async respond(request) {
