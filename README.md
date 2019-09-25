@@ -211,13 +211,13 @@ It provides properties and methods for inspecting an HTTP request that was sent 
 
 #### request.body()
 
-Returns a `Promise` for a `UInt8Array` containing the raw bytes of the request body.
+Returns a `Promise` for a `UInt8Array` containing the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body).
 
 Note that calling this method will cause the entire body to be read into memory, which is convenient, but may be inappropriate for requests with a very large body. See [`request.bodyStream()`](#requestbodystream) to get the body as a stream, which will improve latency and lower memory usage.
 
 #### request.bodyStream()
 
-Returns an `AsyncGenerator` object, which is an async iterable and async iterator that provides the raw bytes of the request body in chunks. Useful for requests with a very large body, because streaming is low-latency and memory efficient.
+Returns an `AsyncGenerator` object, which is an async iterable and async iterator that provides the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) in chunks. Useful for requests with a very large body, because streaming is low-latency and memory efficient.
 
 See [`request.body()`](#requestbody) to get the entire body all at once.
 
@@ -255,16 +255,16 @@ By convention, this object is assigned to a variable named `h` in code examples.
 
 #### h.body(body)
 
-Sets the response body. This is the same as returning the body directly from the route handler, but it's useful in order to begin a chain with other toolkit methods.
+Sets the response [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2). This is the same as returning the body directly from the route handler, but it's useful in order to begin a chain with other toolkit methods.
 
 #### h.code(statusCode)
 
-Sets the response status code. When possible, it is better to use a more specific method instead, such as [`h.redirect()`](#hredirecturl).
+Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). When possible, it is better to use a more specific method instead, such as [`h.created()`](#hcreatedurl) or [`h.redirect()`](#hredirecturl).
 
-*Tip: Use Deno's `status` constants to define the status code.*
+*Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
 ```js
-import { Status as status } from 'https://deno.land/x/http/http_status.ts';
+import { Status as status } from 'https://deno.land/std/http/http_status.ts';
 const handler = (request, h) => {
     return h.code(status.Teapot);
 };
@@ -278,7 +278,7 @@ Returns the toolkit so other methods can be chained.
 
 #### h.header(name, value)
 
-Sets a response header. Always replaces any existing header of the same name. Headers are case insensitive.
+Sets a response [header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Headers_2). Always replaces any existing header of the same name. Headers are case insensitive.
 
 Returns the toolkit so other methods can be chained.
 

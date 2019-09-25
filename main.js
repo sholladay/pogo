@@ -11,17 +11,6 @@ class Pogo {
         };
         this.router = new Router();
     }
-    route(routes) {
-        for (const route of [].concat(routes)) {
-            if (typeof route.handler !== 'function') {
-                throw new TypeError('route.handler must be a function');
-            }
-            for (const method of [].concat(route.method)) {
-                this.router.add({ ...route, method }, route.handler);
-            }
-        }
-        return this;
-    }
     async inject(request) {
         console.log(`Request: ${new Date().toISOString()} ${request.method} ${request.url}`);
 
@@ -42,16 +31,22 @@ class Pogo {
             return respond.badImplementation(request);
         }
 
-        if (result instanceof Toolkit) {
-            return respond(request, result._response);
-        }
-        else {
-            return respond(request, { body : result });
-        }
+        return respond(request, result);
     }
     async respond(request) {
         const response = await this.inject(request);
         request.respond(response);
+    }
+    route(routes) {
+        for (const route of [].concat(routes)) {
+            if (typeof route.handler !== 'function') {
+                throw new TypeError('route.handler must be a function');
+            }
+            for (const method of [].concat(route.method)) {
+                this.router.add({ ...route, method }, route.handler);
+            }
+        }
+        return this;
     }
     async start() {
         const host = this._config.hostname + ':' + this._config.port;

@@ -7,3 +7,4 @@ install:
 script:
   - deno test/server.js
   - deno test/router.js
+  - deno test/toolkit.js

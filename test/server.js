@@ -20,7 +20,7 @@ test('HTML response for string', async () => {
         url    : '/'
     });
     assertStrictEq(called, true);
-    assertStrictEq(response.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(response.body, encoder.encode('hi'));
 });
 
@@ -40,7 +40,7 @@ test('JSON response for plain object', async () => {
         url    : '/'
     });
     assertStrictEq(called, true);
-    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({ foo : 'bar' })));
 });
 
@@ -68,9 +68,9 @@ test('JSON response for boolean', async () => {
         method : 'GET',
         url    : '/true'
     });
-    assertStrictEq(responseFalse.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(responseFalse.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(responseFalse.body, encoder.encode(JSON.stringify(false)));
-    assertStrictEq(responseTrue.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(responseTrue.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(responseTrue.body, encoder.encode(JSON.stringify(true)));
 });
 
@@ -98,9 +98,9 @@ test('JSON response for number', async () => {
         method : 'GET',
         url    : '/one'
     });
-    assertStrictEq(responseZero.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(responseZero.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(responseZero.body, encoder.encode(JSON.stringify(0)));
-    assertStrictEq(responseOne.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(responseOne.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(responseOne.body, encoder.encode(JSON.stringify(1)));
 });
 
@@ -117,8 +117,8 @@ test('empty response for null', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.headers.has('Content-Type'), false);
-    assertEquals(response.body, new Uint8Array());
+    assertStrictEq(response.headers.has('content-type'), false);
+    assertEquals(response.body, encoder.encode(''));
 });
 
 test('error response for undefined', async () => {
@@ -135,7 +135,7 @@ test('error response for undefined', async () => {
         url    : '/'
     });
     assertStrictEq(response.status, 500);
-    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({
         error   : 'Internal Server Error',
         message : 'An internal error occurred on the server'
@@ -155,7 +155,7 @@ test('route with dynamic path', async () => {
         method : 'GET',
         url    : '/users/123'
     });
-    assertStrictEq(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({ userId : '123' })));
 });
 
@@ -184,9 +184,9 @@ test('server.route() can be chained', async () => {
         method : 'GET',
         url    : '/b'
     });
-    assertStrictEq(responseA.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(responseA.body, encoder.encode('a'));
-    assertStrictEq(responseB.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(responseB.body, encoder.encode('b'));
 });
 
@@ -216,9 +216,9 @@ test('array of routes', async () => {
         method : 'GET',
         url    : '/b'
     });
-    assertStrictEq(responseA.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(responseA.body, encoder.encode('a'));
-    assertStrictEq(responseB.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(responseB.body, encoder.encode('b'));
 });
 
@@ -243,12 +243,12 @@ test('route with array of methods', async () => {
         method : 'PUT',
         url    : '/hello'
     });
-    assertStrictEq(getResponse.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(getResponse.body, encoder.encode('Hi, GET'));
-    assertStrictEq(postResponse.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(postResponse.body, encoder.encode('Hi, POST'));
     assertStrictEq(putResponse.status, 404);
-    assertStrictEq(putResponse.headers.get('Content-Type'), 'application/json; charset=utf-8');
+    assertStrictEq(putResponse.headers.get('content-type'), 'application/json; charset=utf-8');
 });
 
 test('route with wildcard method', async () => {
@@ -272,11 +272,11 @@ test('route with wildcard method', async () => {
         method : 'PUT',
         url    : '/hello'
     });
-    assertStrictEq(getResponse.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(getResponse.body, encoder.encode('Hi, GET'));
-    assertStrictEq(postResponse.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(postResponse.body, encoder.encode('Hi, POST'));
-    assertStrictEq(putResponse.headers.get('Content-Type'), 'text/html; charset=utf-8');
+    assertStrictEq(putResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(putResponse.body, encoder.encode('Hi, PUT'));
 });
 
