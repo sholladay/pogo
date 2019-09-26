@@ -270,8 +270,8 @@ Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTT
 
 ```js
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
-const handler = (request, h) => {
-    return response.code(status.Teapot);
+const handler = (request) => {
+    return request.response.code(status.Teapot);
 };
 ```
 
