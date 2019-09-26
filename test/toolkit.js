@@ -4,13 +4,13 @@ import pogo from '../main.js';
 
 const encoder = new TextEncoder();
 
-test('h.body() set JSON body', async () => {
+test('h.response() set JSON body', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/',
         handler(request, h) {
-            return h.body({ hello : 'world' });
+            return h.response({ hello : 'world' });
         }
     });
     const response = await server.inject({
@@ -21,13 +21,13 @@ test('h.body() set JSON body', async () => {
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
 });
 
-test('h.code() set status code', async () => {
+test('response.code() set status code', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/',
         handler(request, h) {
-            return h.body('hi').code(418);
+            return h.response('hi').code(418);
         }
     });
     const response = await server.inject({
@@ -39,20 +39,20 @@ test('h.code() set status code', async () => {
     assertEquals(response.body, encoder.encode('hi'));
 });
 
-test('h.created() set status and location', async () => {
+test('response.created() set status and location', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/no-location',
         handler(request, h) {
-            return h.body('one').created();
+            return h.response('one').created();
         }
     });
     server.route({
         method : 'GET',
         path   : '/with-location',
         handler(request, h) {
-            return h.body('two').created('/yay');
+            return h.response('two').created('/yay');
         }
     });
     const responseNoLocation = await server.inject({
@@ -73,13 +73,13 @@ test('h.created() set status and location', async () => {
     assertEquals(responseWithLocation.body, encoder.encode('two'));
 });
 
-test('h.header() set custom header', async () => {
+test('response.header() set custom header', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/',
         handler(request, h) {
-            return h.body('hi').header('x-dog', 'woof');
+            return h.response('hi').header('x-dog', 'woof');
         }
     });
     const response = await server.inject({
@@ -91,13 +91,13 @@ test('h.header() set custom header', async () => {
     assertEquals(response.body, encoder.encode('hi'));
 });
 
-test('h.location() set location header', async () => {
+test('response.location() set location header', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/',
         handler(request, h) {
-            return h.body('hi').location('/over-the-rainbow');
+            return h.response('hi').location('/over-the-rainbow');
         }
     });
     const response = await server.inject({
@@ -173,13 +173,13 @@ test('h.redirect()', async () => {
     assertEquals(responseFour.body, encoder.encode(''));
 });
 
-test('h.type() override default content-type handling', async () => {
+test('response.type() override default content-type handling', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
         path   : '/',
         handler(request, h) {
-            return h.body({ hello : 'world' }).type('weird/type');
+            return h.response({ hello : 'world' }).type('weird/type');
         }
     });
     const response = await server.inject({

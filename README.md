@@ -93,24 +93,29 @@ const response = await server.inject({
    - [`server.inject(request)`](#serverinjectrequest)
    - [`server.route(option)`](#serverrouteoption)
    - [`server.start()`](#serverstart)
- - [Request](#request)
+ - [Request](#request-1)
    - [`request.body()`](#requestbody)
    - [`request.bodyStream()`](#requestbodystream)
    - [`request.headers`](#requestheaders)
    - [`request.method`](#requestmethod)
    - [`request.params`](#requestparams)
    - [`request.url`](#requesturl)
+ - [Response](#response)
+   - [`response.body`](#responsebody)
+   - [`response.code(statusCode)`](#responsecodestatuscode)
+   - [`response.created(url)`](#responsecreatedurl)
+   - [`response.header(name, value)`](#responseheadername-value)
+   - [`response.headers`](#responseheaders)
+   - [`response.location(url)`](#responselocationurl)
+   - [`response.permanent()`](#responsepermanent)
+   - [`response.redirect(url)`](#responseredirecturl)
+   - [`response.rewritable(isRewritable)`](#responserewritableisrewritable)
+   - [`response.status`](#responsestatus)
+   - [`response.temporary()`](#responsetemporary)
+   - [`response.type(mediaType)`](#responsetypemediatype)
  - [Response Toolkit](#response-toolkit)
-   - [`h.body(body)`](#hbodybody)
-   - [`h.code(statusCode)`](#hcodestatuscode)
-   - [`h.created(url)`](#hcreatedurl)
-   - [`h.header(name, value)`](#hheadername-value)
-   - [`h.location(url)`](#hlocationurl)
-   - [`h.permanent()`](#hpermanent)
+   - [`h.response(body)`](#hresponsebody)
    - [`h.redirect(url)`](#hredirecturl)
-   - [`h.rewritable(isRewritable)`](#hrewritableisrewritable)
-   - [`h.temporary()`](#htemporary)
-   - [`h.type(mediaType)`](#htypemediatype)
 
 ### Server
 
@@ -191,11 +196,11 @@ The handler must return one of:
  - A `string`, which will be sent as HTML.
  - An `object`, which will be [stringified](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and sent as JSON.
  - A [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), which will be sent as-is (raw bytes).
- - A [Response Toolkit](#response-toolkit) instance, which will send the value given to `h.body()`, if any.
+ - A [Response](#response) instance, which will send the `response.body`, if any.
  - Any object that implements the [`Reader`](https://deno.land/typedoc/interfaces/_deno_.reader.html) interface, such as a [`File`](https://deno.land/typedoc/classes/_deno_.file.html) or [`Buffer`](https://deno.land/typedoc/classes/_deno_.buffer.html) instance.
  - A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) for any of the above types.
 
-An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`h.type()`](#htypemediatype) to override the default behavior.
+An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`response.type()`](#responsetypemediatype) to override the default behavior.
 
 #### server.start()
 
@@ -205,13 +210,13 @@ Returns a `Promise` that resolves when the server is listening.
 
 ### Request
 
-The `request` object passed to route handlers is an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
+The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
 
-It provides properties and methods for inspecting an HTTP request that was sent to the server.
+It provides properties and methods for inspecting the content of the request.
 
 #### request.body()
 
-Returns a `Promise` for a `UInt8Array` containing the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body).
+Returns a `Promise` for a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) containing the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body).
 
 Note that calling this method will cause the entire body to be read into memory, which is convenient, but may be inappropriate for requests with a very large body. See [`request.bodyStream()`](#requestbodystream) to get the body as a stream, which will improve latency and lower memory usage.
 
@@ -238,7 +243,7 @@ The [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) ass
 
 Type: `object`
 
-Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding path part associated with the request.
+Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path.
 
 #### request.url
 
@@ -247,90 +252,120 @@ Example: `'/users/123'`
 
 The URL path associated with the request,
 
-### Response Toolkit
+### Response
 
-The response toolkit is an object that is passed to route handlers, with utility methods that make it easy to modify the response. For example, you can use it to set headers or a status code.
+The `response` object represents an HTTP [response](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Responses) to the associated `request` that is passed to route handlers. You can access it as `request.response` or create a new response with the [Response Toolkit](#response-toolkit) by calling `h.response()`. It has utility methods that make it easy to modify the headers, status code, and other attributes.
 
-By convention, this object is assigned to a variable named `h` in code examples.
+#### response.body
 
-#### h.body(body)
+Type: `string` | `object` | [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) | [`Reader`](https://deno.land/typedoc/interfaces/deno.reader.html)
 
-Sets the response [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2). This is the same as returning the body directly from the route handler, but it's useful in order to begin a chain with other toolkit methods.
+The [body]([body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2)) that will be sent in the response. Can be updated by returning a value from the route handler or by creating a new response with [`h.response()`](#hresponsebody) and giving it a value.
 
-#### h.code(statusCode)
+#### response.code(statusCode)
 
-Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). When possible, it is better to use a more specific method instead, such as [`h.created()`](#hcreatedurl) or [`h.redirect()`](#hredirecturl).
+Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). When possible, it is better to use a more specific method instead, such as [`response.created()`](#responsecreatedurl) or [`response.redirect()`](#responseredirecturl).
 
 *Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
 ```js
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
 const handler = (request, h) => {
-    return h.code(status.Teapot);
+    return response.code(status.Teapot);
 };
 ```
 
-#### h.created(url)
+#### response.created(url)
 
 Sets the response status to [`201 Created`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`.
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.header(name, value)
+#### response.header(name, value)
 
 Sets a response [header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Headers_2). Always replaces any existing header of the same name. Headers are case insensitive.
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.location(url)
+#### response.headers
 
-Sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header on the response to the value of `url`. When possible, it is better to use a more specific method instead, such as [`h.created()`](#hcreatedurl) or [`h.redirect()`](#hredirecturl).
+Type: [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
 
-Returns the toolkit so other methods can be chained.
+Contains the [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) that will be sent in the response, such as [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location), [`Vary`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary), and others.
 
-#### h.permanent()
+#### response.location(url)
 
-*Only available after calling the h.redirect() method.*
+Sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header on the response to the value of `url`. When possible, it is better to use a more specific method instead, such as [`response.created()`](#responsecreatedurl) or [`response.redirect()`](#responseredirecturl).
+
+Returns the response so other methods can be chained.
+
+#### response.permanent()
+
+*Only available after calling the `response.redirect()` method.*
 
 Sets the response status to [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) or [`308 Permanent Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308) based on whether the existing status is considered rewritable (see "method handling" on [Redirections in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections) for details).
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.redirect(url)
+#### response.redirect(url)
 
 Sets the response status to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`.
 
-Also causes some new toolkit methods to become available for customizing the redirect behavior:
+Also causes some new response methods to become available for customizing the redirect behavior:
 
- - [`h.permanent()`](#hpermanent)
- - [`h.temporary()`](#htemporary)
- - [`h.rewritable()`](#hrewritableisrewritable)
+ - [`response.permanent()`](#hpermanent)
+ - [`response.temporary()`](#htemporary)
+ - [`response.rewritable()`](#hrewritableisrewritable)
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.rewritable(isRewritable)
+#### response.rewritable(isRewritable)
 
-*Only available after calling the h.redirect() method.*
+*Only available after calling the `response.redirect()` method.*
 
 Sets the response status to [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) or [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) based on whether the existing status is a permanent or temporary redirect code. If `isRewritable` is `false`, then the response status will be set to [`307 Temporary Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307) or [`308 Permanent Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308).
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.temporary()
+#### response.status
 
-*Only available after calling the h.redirect() method.*
+Type: `number`
+
+The [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) that will be sent in the response. Defaults to [`200`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200), which means the request succeeded.
+
+#### response.temporary()
+
+*Only available after calling the `response.redirect()` method.*
 
 Sets the response status to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) or [`307 Temporary Redirect`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307) based on whether the existing status is considered rewritable (see "method handling" on [Redirections in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections) for details).
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
 
-#### h.type(mediaType)
+#### response.type(mediaType)
 
 Sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header on the response to the value of `mediaType`.
 
 Overrides the media type that is set automatically by the framework.
 
-Returns the toolkit so other methods can be chained.
+Returns the response so other methods can be chained.
+
+### Response Toolkit
+
+The response toolkit is an object that is passed to route handlers, with utility methods that make it easy to modify the response. For example, you can use it to set headers or a status code.
+
+By convention, this object is assigned to a variable named `h` in code examples.
+
+#### h.redirect(url)
+
+Creates a new response with a redirect status. Shortcut for `h.response().redirect(url)`. See [`response.redirect()`](#responseredirect) for details.
+
+Returns the response so other methods can be chained.
+
+#### h.response(body)
+
+Creates a new response with an optional [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2). This is the same as returning the body directly from the route handler, but it is useful in order to begin a chain with other response methods.
+
+Returns the response so other methods can be chained.
 
 ## Contributing
 

@@ -1,5 +1,6 @@
 import { http } from './dependencies.js';
 import respond from './lib/respond.js';
+import Response from './lib/response.js';
 import Toolkit from './lib/toolkit.js';
 import Router from './lib/router.js';
 
@@ -22,6 +23,7 @@ class Pogo {
         }
 
         request.params = route.params;
+        request.response = new Response();
 
         let result;
         try {
