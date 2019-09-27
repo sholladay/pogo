@@ -17,6 +17,7 @@ test('h.response() set JSON body', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
 });
@@ -86,6 +87,7 @@ test('response.header() set custom header', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEq(response.headers.get('x-dog'), 'woof');
     assertEquals(response.body, encoder.encode('hi'));
@@ -104,6 +106,7 @@ test('response.location() set location header', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEq(response.headers.get('location'), '/over-the-rainbow');
     assertEquals(response.body, encoder.encode('hi'));

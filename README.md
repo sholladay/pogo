@@ -45,13 +45,6 @@ Adding routes is easy, just call [`server.route()`](#serverrouteoption) and pass
 Add routes in any order you want to, it's safe! Pogo orders them internally by specificity, such that their order of precedence is stable and predictable and avoids ambiguity or conflicts.
 
 ```js
-server.route([
-    { method : 'GET', path : '/hi', handler : () => 'Hello!' },
-    { method : 'GET', path : '/bye', handler : () => 'Goodbye!' }
-});
-```
-
-```js
 server.route({ method : 'GET', path : '/hi', handler : () => 'Hello!' });
 server.route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
 ```
@@ -60,6 +53,13 @@ server.route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
 server
     .route({ method : 'GET', path : '/hi', handler : () => 'Hello!' });
     .route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
+```
+
+```js
+server.route([
+    { method : 'GET', path : '/hi', handler : () => 'Hello!' },
+    { method : 'GET', path : '/bye', handler : () => 'Goodbye!' }
+});
 ```
 
 You can also configure the route to handle multiple methods by using an array, or `*` to handle all possible methods.
@@ -71,7 +71,7 @@ server.route({ method : ['GET', 'POST'], path : '/hi', handler : () => 'Hello!' 
 server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 ```
 
-### Writing Tests
+### Writing tests
 
 When it comes time to write tests for your app, Pogo has you covered with [`server.inject()`](serverinjectrequest).
 
@@ -88,8 +88,8 @@ const response = await server.inject({
 
 ## API
 
+ - [`server = pogo.server(option)`](#server--pogoserveroption)
  - [Server](#server)
-   - [`server = pogo.server(option)`](#server--pogoserveroption)
    - [`server.inject(request)`](#serverinjectrequest)
    - [`server.route(option)`](#serverrouteoption)
    - [`server.start()`](#serverstart)
@@ -97,8 +97,18 @@ const response = await server.inject({
    - [`request.body()`](#requestbody)
    - [`request.bodyStream()`](#requestbodystream)
    - [`request.headers`](#requestheaders)
+   - [`request.host`](#requesthost)
+   - [`request.hostname`](#requesthostname)
+   - [`request.href`](#requesthref)
    - [`request.method`](#requestmethod)
+   - [`request.origin`](#requestorigin)
    - [`request.params`](#requestparams)
+   - [`request.path`](#requestpath)
+   - [`request.raw`](#requestraw)
+   - [`request.response`](#requestresponse)
+   - [`request.search`](#requestsearch)
+   - [`request.searchParams`](#requestsearchparams)
+   - [`request.server`](#requestserver)
    - [`request.url`](#requesturl)
  - [Response](#response)
    - [`response.body`](#responsebody)
@@ -114,32 +124,34 @@ const response = await server.inject({
    - [`response.temporary()`](#responsetemporary)
    - [`response.type(mediaType)`](#responsetypemediatype)
  - [Response Toolkit](#response-toolkit)
-   - [`h.response(body)`](#hresponsebody)
    - [`h.redirect(url)`](#hredirecturl)
+   - [`h.response(body)`](#hresponsebody)
 
-### Server
-
-#### server = pogo.server(option)
+### server = pogo.server(option)
 
 Returns a server instance, which can then be used to add routes and start listening for requests.
 
-##### option
+#### option
 
 Type: `object`
 
-###### hostname
+##### hostname
 
 Type: `string`<br>
 Default: `'localhost'`
 
 Specifies which domain or IP address the server will listen on when `server.start()` is called. Use `0.0.0.0` to listen on any hostname.
 
-###### port
+##### port
 
 Type: `number`<br>
 Example: `3000`
 
-Specifies which port number the server will listen on when `server.start()` is called. Use `0` to listen on any available port.
+Specifies which port number the server will listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on any available port.
+
+### Server
+
+The `server` object returned by `pogo.server()` represents your [web server](https://developer.mozilla.org/en-US/docs/Learn/Common_questions/What_is_a_web_server). When you start the server, it begins listening for HTTP requests, processes those requests when they are received, and makes the content within each request available to the route handlers that you specify.
 
 #### server.inject(request)
 
@@ -165,11 +177,11 @@ Adds a route to the server so that the server knows how to respond to requests f
 
 ##### option
 
-Type: `object` or `array`
+Type: `object` or `array<object>`
 
 ###### method
 
-Type: `string`<br>
+Type: `string` or `array<string>`<br>
 Example: `GET`
 
 Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), or `*` to match all methods. Used to limit which requests will trigger the route handler.
@@ -181,7 +193,7 @@ Example: `'/users/{userId}'`
 
 Any valid URL path. Used to limit which requests will trigger the route handler.
 
-Supports path parameters with dynamic values, which can be accessed in the handler as `request.params`.
+Supports path parameters with dynamic values, which can be accessed in the handler as [`request.params`](#requestparams).
 
 ###### handler(request, h)
 
@@ -232,12 +244,46 @@ Type: [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
 
 Contains the [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) that were sent in the request, such as [`Accept`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept), [`User-Agent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent), and others.
 
+#### request.host
+
+Type: `string`<br>
+Example: `'localhost:3000'`
+
+The value of the HTTP [`Host`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header, which is a combination of the hostname and port at which the server received the request, separated by a `:` colon. Useful for returning different content depending on which URL your visitors use to access the server. Shortcut for `request.url.host`.
+
+To get the hostname, which does not include the port number, see [`request.hostname`](#requesthostname).
+
+#### request.hostname
+
+Type: `string`<br>
+Example: `'localhost'`
+
+The hostname part of the HTTP [`Host`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header. That is, the domain or IP address at which the server received the request, without the port number. Useful for returning different content depending on which URL your visitors use to access the server. Shortcut for `request.url.hostname`.
+
+To get the host, which includes the port number, see [`request.host`](#requesthostname).
+
+#### request.href
+
+Type: `string`<br>
+Example: `'http://localhost:3000/page.html?query'`
+
+The full URL associated with the request, represented as a string. Shortcut for `request.url.href`.
+
+To get this value as a parsed object instead, use [`request.url`](#requesturl).
+
 #### request.method
 
-Type: `string` or `array`<br>
+Type: `string`<br>
 Example: `'GET'`
 
 The [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) associated with the request, such as [`GET`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) or [`POST`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+
+#### request.origin
+
+Type: `string`<br>
+Example: `'http://localhost:3000'`
+
+The scheme and host parts of the request URL. Shortcut for `request.url.origin`.
 
 #### request.params
 
@@ -245,12 +291,57 @@ Type: `object`
 
 Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path.
 
-#### request.url
+#### request.path
 
 Type: `string`<br>
-Example: `'/users/123'`
+Example: `/page.html`
 
-The URL path associated with the request,
+The path part of the request URL, excluding the query. Shortcut for `request.url.pathname`.
+
+#### request.raw
+
+Type: [`ServerRequest`](https://github.com/denoland/deno_std/blob/5d0dd5878e82ab7577356096469a7e280efe8442/http/server.ts#L100-L202)
+
+The original request object from Deno's `http` module, upon which many of the other request properties are based.
+
+*You probably don't need this. It is provided as an escape hatch, but using it is not recommended.*
+
+#### request.response
+
+Type: [`Response`](#response)
+
+The response that will be sent for the request. To create a new response, see [`h.response()`](#hresponsebody).
+
+#### request.search
+
+Type: `string`<br>
+Example: `'?query'`
+
+The query part of the request URL, represented as a string. Shortcut for `request.url.search`.
+
+To get this value as a parsed object instead, use [`request.searchParams`](#requestsearchparams).
+
+#### request.searchParams
+
+Type: [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+
+The query part of the request URL, represented as an object that has methods for working with the query parameters. Shortcut for `request.url.searchParams`.
+
+To get this value as a string instead, use [`request.search`](#requestsearch).
+
+#### request.server
+
+Type: [`Server`](#server)
+
+The server that is handling the request.
+
+#### request.url
+
+Type: [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+
+The full URL associated with the request, represented as an object that contains properties for various parts of the URL,
+
+To get this value as a string instead, use [`request.href`](#requesthref). In some cases, the URL object itself can be used as if it were a string, because it has a smart `.toString()` method.
 
 ### Response
 
@@ -329,9 +420,10 @@ Returns the response so other methods can be chained.
 
 #### response.status
 
-Type: `number`
+Type: `number`<br>
+Example: [`418`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)
 
-The [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) that will be sent in the response. Defaults to [`200`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200), which means the request succeeded.
+The [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) that will be sent in the response. Defaults to [`200`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200), which means the request succeeded. 4xx and 5xx codes indicate an error.
 
 #### response.temporary()
 
