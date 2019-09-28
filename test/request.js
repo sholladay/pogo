@@ -184,7 +184,7 @@ test('request.params contains path variables', async () => {
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({
-        type  : 'object',
+        type   : 'object',
         userId : '123',
         value  : {
             userId : '123'
