@@ -1,6 +1,5 @@
+import { assertEquals, test } from '../dev-dependencies.js';
 import Router from '../lib/router.js';
-import { assertEquals } from 'https://deno.land/std@v0.18.0/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/std@v0.18.0/testing/mod.ts';
 
 test('add() static routes', () => {
     const router = new Router();
@@ -83,5 +82,3 @@ test('route() wildcard method routes', () => {
         }
     });
 });
-
-runTests();

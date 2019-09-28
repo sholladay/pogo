@@ -1,5 +1,4 @@
-import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.18.0/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/std@v0.18.0/testing/mod.ts';
+import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
 import pogo from '../main.js';
 
 const encoder = new TextEncoder();
@@ -17,6 +16,7 @@ test('h.response() set JSON body', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
 });
@@ -86,6 +86,7 @@ test('response.header() set custom header', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEq(response.headers.get('x-dog'), 'woof');
     assertEquals(response.body, encoder.encode('hi'));
@@ -104,6 +105,7 @@ test('response.location() set location header', async () => {
         method : 'GET',
         url    : '/'
     });
+    assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEq(response.headers.get('location'), '/over-the-rainbow');
     assertEquals(response.body, encoder.encode('hi'));
@@ -190,5 +192,3 @@ test('response.type() override default content-type handling', async () => {
     assertStrictEq(response.headers.get('content-type'), 'weird/type');
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
 });
-
-runTests();
