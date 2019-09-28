@@ -1,5 +1,4 @@
-import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.19.0/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/std@v0.19.0/testing/mod.ts';
+import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
 import pogo from '../main.js';
 
 const encoder = new TextEncoder();
@@ -193,5 +192,3 @@ test('response.type() override default content-type handling', async () => {
     assertStrictEq(response.headers.get('content-type'), 'weird/type');
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
 });
-
-runTests();

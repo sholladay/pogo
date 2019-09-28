@@ -1,5 +1,4 @@
-import { assertEquals, assertStrictEq } from 'https://deno.land/std@v0.19.0/testing/asserts.ts';
-import { runTests, test } from 'https://deno.land/std@v0.19.0/testing/mod.ts';
+import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
 import pogo from '../main.js';
 
 const encoder = new TextEncoder();
@@ -300,5 +299,3 @@ test('route with wildcard method', async () => {
     assertStrictEq(putResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(putResponse.body, encoder.encode('Hi, PUT'));
 });
-
-runTests();
