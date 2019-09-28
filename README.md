@@ -4,7 +4,7 @@
 
 Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.6.0 and higher.*
+*Supports Deno v0.19.0 and higher.*
 
 ## Contents
 
