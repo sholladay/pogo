@@ -241,6 +241,47 @@ test('request.raw is the original request', async () => {
     })));
 });
 
+test('request.referrer is a referrer URL string', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler(request) {
+            return {
+                isRefererHeader  : request.referrer === request.headers.get('referer'),
+                type             : typeof request.referrer,
+                value            : request.referrer
+            };
+        }
+    });
+    const withoutResponse = await server.inject({
+        method  : 'GET',
+        url     : '/',
+        headers : new Headers()
+    });
+    const withResponse = await server.inject({
+        method  : 'GET',
+        url     : '/',
+        headers : new Headers({
+            referer : 'https://example.com'
+        })
+    });
+    assertStrictEq(withoutResponse.status, 200);
+    assertStrictEq(withoutResponse.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(withoutResponse.body, encoder.encode(JSON.stringify({
+        isRefererHeader : false,
+        type            : 'string',
+        value           : ''
+    })));
+    assertStrictEq(withResponse.status, 200);
+    assertStrictEq(withResponse.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(withResponse.body, encoder.encode(JSON.stringify({
+        isRefererHeader : true,
+        type            : 'string',
+        value           : 'https://example.com'
+    })));
+});
+
 test('request.response is a Response instance', async () => {
     const server = pogo.server();
     server.route({

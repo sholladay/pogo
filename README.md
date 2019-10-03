@@ -105,6 +105,7 @@ const response = await server.inject({
    - [`request.params`](#requestparams)
    - [`request.path`](#requestpath)
    - [`request.raw`](#requestraw)
+   - [`request.referrer`](#requestreferrer)
    - [`request.response`](#requestresponse)
    - [`request.search`](#requestsearch)
    - [`request.searchParams`](#requestsearchparams)
@@ -222,7 +223,7 @@ Returns a `Promise` that resolves when the server is listening.
 
 ### Request
 
-The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
+The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is similar to an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
 
 It provides properties and methods for inspecting the content of the request.
 
@@ -305,6 +306,14 @@ Type: [`ServerRequest`](https://github.com/denoland/deno_std/blob/5d0dd5878e82ab
 The original request object from Deno's `http` module, upon which many of the other request properties are based.
 
 *You probably don't need this. It is provided as an escape hatch, but using it is not recommended.*
+
+#### request.referrer
+
+Type: `string`
+
+The value of the HTTP [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer) header, which is useful for determining where the request came from. However, not all user agents send a referrer and the value can be influenced by various mechanisms, such as [`Referrer-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy). As such, it is recommended to use the referrer as a hint, rather than relying on it directly.
+
+Note that this property uses the correct spelling of "referrer", unlike the header. It will be an empty string if the header is missing.
 
 #### request.response
 
