@@ -422,9 +422,9 @@ Sets the response status to [`302 Found`](https://developer.mozilla.org/en-US/do
 
 Also causes some new response methods to become available for customizing the redirect behavior:
 
- - [`response.permanent()`](#hpermanent)
- - [`response.temporary()`](#htemporary)
- - [`response.rewritable()`](#hrewritableisrewritable)
+ - [`response.permanent()`](#responsepermanent)
+ - [`response.temporary()`](#responsetemporary)
+ - [`response.rewritable()`](#responserewritableisrewritable)
 
 Returns the response so other methods can be chained.
 
