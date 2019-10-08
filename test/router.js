@@ -5,14 +5,16 @@ test('add() static routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
-        path   : '/hello'
-    }, 'hi');
+        path   : '/hello',
+        xyz    : 123
+    });
 
     assertEquals([...router.routes.get.static.entries()], [
         ['/hello', {
-            data     : 'hi',
+            method   : 'GET',
             path     : '/hello',
-            segments : ['hello']
+            segments : ['hello'],
+            xyz      : 123
         }]
     ]);
 });
@@ -21,13 +23,15 @@ test('add() dynamic routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
-        path   : '/{username}'
-    }, 'john');
+        path   : '/{username}',
+        xyz    : 123
+    });
 
     assertEquals(router.routes.get.dynamic, [{
-        data     : 'john',
+        method   : 'GET',
         path     : '/{username}',
-        segments : ['{username}']
+        segments : ['{username}'],
+        xyz      : 123
     }]);
 });
 
@@ -35,12 +39,16 @@ test('route() static routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
-        path   : '/hello'
-    }, 'hi');
+        path   : '/hello',
+        xyz    : 123
+    });
 
     assertEquals(router.route('GET', '/hello'), {
-        data   : 'hi',
-        params : {}
+        method   : 'GET',
+        params   : {},
+        path     : '/hello',
+        segments : ['hello'],
+        xyz      : 123
     });
     assertEquals(router.route('POST', '/hello'), undefined);
 });
@@ -49,36 +57,47 @@ test('route() dynamic routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
-        path   : '/{api}/{userId}'
-    }, 'john');
+        path   : '/{api}/{userId}',
+        xyz    : 123
+    });
 
-    assertEquals(router.route('GET', '/users/123'), {
-        data   : 'john',
+    assertEquals(router.route('GET', '/users/abc'), {
+        method : 'GET',
         params : {
             api    : 'users',
-            userId : '123'
-        }
+            userId : 'abc'
+        },
+        path     : '/{api}/{userId}',
+        segments : ['{api}', '{userId}'],
+        xyz      : 123
     });
-    assertEquals(router.route('POST', '/users/123'), undefined);
+    assertEquals(router.route('POST', '/users/abc'), undefined);
 });
 
 test('route() wildcard method routes', () => {
     const router = new Router();
     router.add({
         method : '*',
-        path   : '/users/{userId}'
-    }, 'wild');
-
-    assertEquals(router.route('GET', '/users/123'), {
-        data   : 'wild',
-        params : {
-            userId : '123'
-        }
+        path   : '/users/{userId}',
+        xyz    : 123
     });
-    assertEquals(router.route('POST', '/users/123'), {
-        data   : 'wild',
+
+    assertEquals(router.route('GET', '/users/abc'), {
+        method : '*',
         params : {
-            userId : '123'
-        }
+            userId : 'abc'
+        },
+        path     : '/users/{userId}',
+        segments : ['users', '{userId}'],
+        xyz      : 123
+    });
+    assertEquals(router.route('POST', '/users/abc'), {
+        method : '*',
+        params : {
+            userId : 'abc'
+        },
+        path     : '/users/{userId}',
+        segments : ['users', '{userId}'],
+        xyz      : 123
     });
 });

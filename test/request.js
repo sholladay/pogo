@@ -309,26 +309,34 @@ test('request.response is a Response instance', async () => {
 test('request.route is a router record', async () => {
     const server = pogo.server();
     server.route({
-        method : 'GET',
-        path   : '/',
+        method : '*',
+        path   : '/{api}',
         handler(request) {
             return {
-                hasHandler : typeof request.route.data === 'function',
-                params     : request.route.params,
-                type       : typeof request.route
+                handlerType : typeof request.route.handler,
+                method      : request.route.method,
+                params      : request.route.params,
+                path        : request.route.path,
+                segments    : request.route.segments,
+                type        : typeof request.route
             };
         }
     });
     const response = await server.inject({
         method : 'GET',
-        url    : '/'
+        url    : '/status'
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({
-        hasHandler : true,
-        params     : {},
-        type       : 'object'
+        handlerType : 'function',
+        method      : '*',
+        params      : {
+            api : 'status'
+        },
+        path     : '/{api}',
+        segments : ['{api}'],
+        type     : 'object'
     })));
 });
 

@@ -107,6 +107,7 @@ const response = await server.inject({
    - [`request.raw`](#requestraw)
    - [`request.referrer`](#requestreferrer)
    - [`request.response`](#requestresponse)
+   - [`request.route`](#requestroute)
    - [`request.search`](#requestsearch)
    - [`request.searchParams`](#requestsearchparams)
    - [`request.server`](#requestserver)
@@ -290,7 +291,7 @@ The scheme and host parts of the request URL. Shortcut for `request.url.origin`.
 
 Type: `object`
 
-Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path.
+Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path. Shortcut for `request.route.params`.
 
 #### request.path
 
@@ -320,6 +321,14 @@ Note that this property uses the correct spelling of "referrer", unlike the head
 Type: [`Response`](#response)
 
 The response that will be sent for the request. To create a new response, see [`h.response()`](#hresponsebody).
+
+#### request.route
+
+Type: `object`
+
+The route that is handling the request, as given to [`server.route()`](#serverrouteoption), with the following additional properties:
+ - `params` is an object with properties for each dynamic path parameter
+ - `segments` is an array of path parts, as in the values separated by `/` slashes in the route path
 
 #### request.search
 
