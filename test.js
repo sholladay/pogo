@@ -1,3 +1,4 @@
+import './test/bang.js';
 import './test/request.js';
 import './test/router.js';
 import './test/server.js';

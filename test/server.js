@@ -1,4 +1,5 @@
 import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import * as bang from '../lib/bang.js';
 import pogo from '../main.js';
 
 const encoder = new TextEncoder();
@@ -144,7 +145,8 @@ test('error response for undefined', async () => {
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, encoder.encode(JSON.stringify({
         error   : 'Internal Server Error',
-        message : 'An internal error occurred on the server'
+        message : 'Internal Server Error',
+        status  : 500
     })));
 });
 
@@ -264,7 +266,8 @@ test('route with array of methods', async () => {
     assertStrictEq(putResponse.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(putResponse.body, encoder.encode(JSON.stringify({
         error   : 'Not Found',
-        message : 'Page not found'
+        message : 'Not Found',
+        status  : 404
     })));
 });
 
@@ -298,4 +301,92 @@ test('route with wildcard method', async () => {
     assertStrictEq(putResponse.status, 200);
     assertStrictEq(putResponse.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(putResponse.body, encoder.encode('Hi, PUT'));
+});
+
+test('route returns Error', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            return new Error('Crazyyy');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 500);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        error   : 'Internal Server Error',
+        message : 'Internal Server Error',
+        status  : 500
+    })));
+});
+
+test('route throws Error', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            throw new Error('Crazyyy');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 500);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        error   : 'Internal Server Error',
+        message : 'Internal Server Error',
+        status  : 500
+    })));
+});
+
+test('route returns bang.badRequest()', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            return bang.badRequest('Crazyyy');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 400);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        error   : 'Bad Request',
+        message : 'Crazyyy',
+        status  : 400
+    })));
+});
+
+test('route throws bang.badRequest()', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            throw bang.badRequest('Crazyyy');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 400);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        error   : 'Bad Request',
+        message : 'Crazyyy',
+        status  : 400
+    })));
 });
