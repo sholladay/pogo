@@ -24,3 +24,7 @@ Alternatively, if you want to play around with the example, run it from a local 
 curl -fsSL https://github.com/sholladay/pogo/archive/master.tar.gz | tar -x --strip-components=1 'pogo-master/example'
 deno example/hello-world/run.js
 ```
+
+## What's next?
+
+When you are done with this example, check out [Simple Server](../simple-server) to see some other features of Pogo and how you can write tests for your app.
