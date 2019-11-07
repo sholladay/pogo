@@ -179,11 +179,11 @@ Adds a route to the server so that the server knows how to respond to requests f
 
 ##### option
 
-Type: `object` or `array<object>`
+Type: `object` | `array<object>`
 
 ###### method
 
-Type: `string` or `array<string>`<br>
+Type: `string` | `array<string>`<br>
 Example: `GET`
 
 Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), or `*` to match all methods. Used to limit which requests will trigger the route handler.
