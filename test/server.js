@@ -4,7 +4,7 @@ import pogo from '../main.js';
 
 const encoder = new TextEncoder();
 
-test('HTML response for string', async () => {
+test('server.route() HTML response for string', async () => {
     const server = pogo.server();
     let called = false;
     server.route({
@@ -25,7 +25,7 @@ test('HTML response for string', async () => {
     assertEquals(response.body, encoder.encode('hi'));
 });
 
-test('JSON response for plain object', async () => {
+test('server.route() JSON response for plain object', async () => {
     const server = pogo.server();
     let called = false;
     server.route({
@@ -46,7 +46,7 @@ test('JSON response for plain object', async () => {
     assertEquals(response.body, encoder.encode(JSON.stringify({ foo : 'bar' })));
 });
 
-test('JSON response for boolean', async () => {
+test('server.route() JSON response for boolean', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -78,7 +78,7 @@ test('JSON response for boolean', async () => {
     assertEquals(responseTrue.body, encoder.encode(JSON.stringify(true)));
 });
 
-test('JSON response for number', async () => {
+test('server.route() JSON response for number', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -110,7 +110,7 @@ test('JSON response for number', async () => {
     assertEquals(responseOne.body, encoder.encode(JSON.stringify(1)));
 });
 
-test('empty response for null', async () => {
+test('server.route() empty response for null', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -128,7 +128,7 @@ test('empty response for null', async () => {
     assertEquals(response.body, encoder.encode(''));
 });
 
-test('error response for undefined', async () => {
+test('server.route() error response for undefined', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -150,7 +150,7 @@ test('error response for undefined', async () => {
     })));
 });
 
-test('route with dynamic path', async () => {
+test('server.route() with dynamic path', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -201,7 +201,7 @@ test('server.route() can be chained', async () => {
     assertEquals(responseB.body, encoder.encode('b'));
 });
 
-test('array of routes', async () => {
+test('server.route() array of routes', async () => {
     const server = pogo.server();
     server.route([
         {
@@ -235,7 +235,7 @@ test('array of routes', async () => {
     assertEquals(responseB.body, encoder.encode('b'));
 });
 
-test('route with array of methods', async () => {
+test('server.route() array of methods', async () => {
     const server = pogo.server();
     server.route({
         method : ['GET', 'POST'],
@@ -271,7 +271,7 @@ test('route with array of methods', async () => {
     })));
 });
 
-test('route with wildcard method', async () => {
+test('server.route() wildcard method', async () => {
     const server = pogo.server();
     server.route({
         method : '*',
@@ -303,7 +303,7 @@ test('route with wildcard method', async () => {
     assertEquals(putResponse.body, encoder.encode('Hi, PUT'));
 });
 
-test('route returns Error', async () => {
+test('server.route() handler returns Error', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -325,7 +325,7 @@ test('route returns Error', async () => {
     })));
 });
 
-test('route throws Error', async () => {
+test('server.route() handler throws Error', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -347,7 +347,7 @@ test('route throws Error', async () => {
     })));
 });
 
-test('route returns bang.badRequest()', async () => {
+test('server.route() handler returns bang.badRequest()', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',
@@ -369,7 +369,7 @@ test('route returns bang.badRequest()', async () => {
     })));
 });
 
-test('route throws bang.badRequest()', async () => {
+test('server.route() handler throws bang.badRequest()', async () => {
     const server = pogo.server();
     server.route({
         method : 'GET',

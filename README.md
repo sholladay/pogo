@@ -40,7 +40,7 @@ server.start();
 
 ### Adding routes
 
-Adding routes is easy, just call [`server.route()`](#serverrouteoption) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
+Adding routes is easy, just call [`server.route()`](#serverrouteroute) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
 
 Add routes in any order you want to, it's safe! Pogo orders them internally by specificity, such that their order of precedence is stable and predictable and avoids ambiguity or conflicts.
 
@@ -91,7 +91,8 @@ const response = await server.inject({
  - [`server = pogo.server(option)`](#server--pogoserveroption)
  - [Server](#server)
    - [`server.inject(request)`](#serverinjectrequest)
-   - [`server.route(option)`](#serverrouteoption)
+   - [`server.route(route)`](#serverrouteroute)
+   - [`server.router`](#serverrouter)
    - [`server.start()`](#serverstart)
  - [Request](#request-1)
    - [`request.body()`](#requestbody)
@@ -128,6 +129,15 @@ const response = await server.inject({
  - [Response Toolkit](#response-toolkit)
    - [`h.redirect(url)`](#hredirecturl)
    - [`h.response(body)`](#hresponsebody)
+ - [Router](#router)
+   - [`router.add(route)`](#routeraddroute)
+   - [`router.all(route)`](#routerallroute)
+   - [`router.delete(route)`](#routerdeleteroute)
+   - [`router.get(route)`](#routergetroute)
+   - [`router.patch(route)`](#routerpatchroute)
+   - [`router.post(route)`](#routerpostroute)
+   - [`router.put(route)`](#routerputroute)
+   - [`router.routes`](#routerroutes)
 
 ### server = pogo.server(option)
 
@@ -173,13 +183,27 @@ Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Method
 
 Any valid URL path. Used to lookup the route handler.
 
-#### server.route(option)
+#### server.route(route)
+#### server.route(route, handler)
+#### server.route(route, options, handler)
 
-Adds a route to the server so that the server knows how to respond to requests for the given HTTP method and path, etc.
+> A route matches an incoming request to a handler function that generates a response.
+
+Adds a route to the server so that the server knows how to respond to requests that match the given HTTP [method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) and URL path. Shortcut for `server.router.add()`.
+
+```js
+server.route({ method : 'GET', path : '/', handler : () => 'Hello, World!' });
+```
+```js
+server.route({ method : 'GET', path : '/' }, () => 'Hello, World!');
+```
+```js
+server.route('/', { method : 'GET' }, () => 'Hello, World!');
+```
 
 ##### option
 
-Type: `object` | `array<object>`
+Type: `object` | `array<object>` | `Router`
 
 ###### method
 
@@ -217,11 +241,22 @@ The handler must return one of:
 
 An appropriate [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header will be set automatically based on the response body before the response is sent. You can use [`response.type()`](#responsetypemediatype) to override the default behavior.
 
+#### server.router
+
+Type: [`Router`](#router)
+
+The route manager for the server, which contains the routing table for all known routes, as well as various methods for adding routes to the routing table.
+
 #### server.start()
 
-Begins listening on the [`hostname`](#hostname) and [`port`](#port) specified in the server options.
+Begins listening for requests on the [`hostname`](#hostname) and [`port`](#port) specified in the server options.
 
 Returns a `Promise` that resolves when the server is listening.
+
+```js
+await server.start();
+console.log('Listening for requests');
+```
 
 ### Request
 
@@ -327,7 +362,7 @@ The response that will be sent for the request. To create a new response, see [`
 
 Type: `object`
 
-The route that is handling the request, as given to [`server.route()`](#serverrouteoption), with the following additional properties:
+The route that is handling the request, as given to [`server.route()`](#serverrouteroute), with the following additional properties:
  - `params` is an object with properties for each dynamic path parameter
  - `segments` is an array of path parts, as in the values separated by `/` slashes in the route path
 
@@ -375,6 +410,8 @@ The [body]([body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Bod
 #### response.code(statusCode)
 
 Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). When possible, it is better to use a more specific method instead, such as [`response.created()`](#responsecreatedurl) or [`response.redirect()`](#responseredirecturl).
+
+Returns the response so other methods can be chained.
 
 *Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
@@ -477,6 +514,97 @@ Returns the response so other methods can be chained.
 Creates a new response with an optional [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2). This is the same as returning the body directly from the route handler, but it is useful in order to begin a chain with other response methods.
 
 Returns the response so other methods can be chained.
+
+### Router
+
+A router is used to store routes, which match an incoming request to a handler function that generates a response. A router can be given to `server.route()` to expose the routes over HTTP. Routers can also be combined with `router.add()`.
+
+Note that you don't necessarily need to create a router yourself. The server has a default router that you can add routes to using `server.router` or `server.route()`. You only need to create your own router if you prefer the chaining syntax for defining routes and you want to export the routes from a different file than where the server is created. In other words, it's useful for larger applications.
+
+```js
+const server = pogo.server();
+server.router
+    .get('/', () => {
+        return 'Hello, World!';
+    })
+    .get('/status', () => {
+        return 'Everything is swell!';
+    });
+```
+
+#### router.add(route)
+#### router.add(route, options)
+#### router.add(route, options, handler)
+
+Adds a new route to the routing table, which a server can use to lookup a route handler for an incoming request.
+
+The normal way to add a route is with a `route` object that has `method`, `path`, and `handler` properties.
+
+If `route` is a string, it will be used as the path. The `handler` function can be a property of the `route` object, options object, or it can be a standalone agument.
+
+Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().add('/', { method : '*' }, () => 'Hello, World!');
+```
+
+#### router.all(route)
+
+Shortcut for `router.add()`, with `*` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().all('/', () => 'Hello, World!');
+```
+
+#### router.delete(route)
+
+Shortcut for `router.add()`, with `DELETE` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().delete('/', () => 'Hello, World!');
+```
+
+#### router.get(route)
+
+Shortcut for `router.add()`, with `GET` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().get('/', () => 'Hello, World!');
+```
+
+#### router.patch(route)
+
+Shortcut for `router.add()`, with `PATCH` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+#### router.post(route)
+
+Shortcut for `router.add()`, with `POST` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+#### router.put(route)
+
+Shortcut for `router.add()`, with `PUT` as the default HTTP method,
+
+Returns the router so other methods can be chained.
+
+#### router.route(method, path)
+
+Look up a route that matches the given `method` and `path`.
+
+#### router.routes
+
+Type: `object`
+
+The routing table, which contains all of the routes that have been added to the router.
 
 ## Contributing
 

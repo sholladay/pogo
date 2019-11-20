@@ -1,25 +1,29 @@
 import { assertEquals, test } from '../dev-dependencies.js';
 import Router from '../lib/router.js';
 
-test('add() static routes', () => {
-    const router = new Router();
-    router.add({
+test('new Router() static route', () => {
+    const router = new Router({
         method : 'GET',
         path   : '/hello',
         xyz    : 123
     });
 
-    assertEquals([...router.routes.get.static.entries()], [
-        ['/hello', {
-            method   : 'GET',
-            path     : '/hello',
-            segments : ['hello'],
-            xyz      : 123
-        }]
-    ]);
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
 });
 
-test('add() dynamic routes', () => {
+test('new Router() dynamic route', () => {
     const router = new Router();
     router.add({
         method : 'GET',
@@ -27,15 +31,308 @@ test('add() dynamic routes', () => {
         xyz    : 123
     });
 
-    assertEquals(router.routes.get.dynamic, [{
-        method   : 'GET',
-        path     : '/{username}',
-        segments : ['{username}'],
-        xyz      : 123
-    }]);
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [{
+                method   : 'GET',
+                path     : '/{username}',
+                segments : ['{username}'],
+                xyz      : 123
+            }],
+            static  : new Map()
+        }
+    });
 });
 
-test('route() static routes', () => {
+test('new Router() mixed route array with default method', () => {
+    const handler = () => {};
+    const router = new Router([
+        '/one',
+        { path : '/two' },
+        new Router({
+            method : 'POST',
+            path   : '/three'
+        })
+    ], { method : 'GET' });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/one', {
+                    method   : 'GET',
+                    path     : '/one',
+                    segments : ['one']
+                }],
+                ['/two', {
+                    method   : 'GET',
+                    path     : '/two',
+                    segments : ['two']
+                }]
+            ])
+        },
+        post : {
+            dynamic : [],
+            static  : new Map([
+                ['/three', {
+                    method   : 'POST',
+                    path     : '/three',
+                    segments : ['three']
+                }]
+            ])
+        }
+    });
+});
+
+test('router.add() static route', () => {
+    const router = new Router();
+    router.add({
+        method : 'GET',
+        path   : '/hello',
+        xyz    : 123
+    });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.add() dynamic route', () => {
+    const router = new Router();
+    router.add({
+        method : 'GET',
+        path   : '/{username}',
+        xyz    : 123
+    });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [{
+                method   : 'GET',
+                path     : '/{username}',
+                segments : ['{username}'],
+                xyz      : 123
+            }],
+            static  : new Map()
+        }
+    });
+});
+
+test('router.add() router instance', () => {
+    const baseRouter = new Router();
+    baseRouter.add({
+        method : 'GET',
+        path   : '/hello',
+        xyz    : 123
+    });
+
+    const extendedRouter = new Router();
+    extendedRouter.add(baseRouter);
+
+    assertEquals(extendedRouter.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.add() array of methods', () => {
+    const router = new Router();
+    router.add({
+        method : ['GET', 'POST'],
+        path   : '/hello',
+        xyz    : 123
+    });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        },
+        post : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'POST',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.add() array of routes', () => {
+    const router = new Router();
+    router.add([
+        {
+            method : 'GET',
+            path   : '/hello',
+            xyz    : 123
+        },
+        {
+            method : 'GET',
+            path   : '/bye',
+            xyz    : 123
+        }
+    ]);
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/bye', {
+                    method   : 'GET',
+                    path     : '/bye',
+                    segments : ['bye'],
+                    xyz      : 123
+                }],
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.get(options)', () => {
+    const router = new Router();
+    router.get({
+        path   : '/hello',
+        xyz    : 123
+    });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.get(path, options)', () => {
+    const router = new Router();
+    router.get('/hello', {
+        xyz : 123
+    });
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.get(path, handler)', () => {
+    const router = new Router();
+    const handler = () => {};
+    router.get('/hello', handler);
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    handler,
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello']
+                }]
+            ])
+        }
+    });
+});
+
+test('router.get(options, handler)', () => {
+    const router = new Router();
+    const handler = () => {};
+    router.get({
+        path : '/hello',
+        xyz  : 123
+    }, handler);
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    handler,
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.get(path, options, handler)', () => {
+    const router = new Router();
+    const handler = () => {};
+    router.get('/hello', { xyz : 123 }, handler);
+
+    assertEquals(router.routes, {
+        get : {
+            dynamic : [],
+            static  : new Map([
+                ['/hello', {
+                    handler,
+                    method   : 'GET',
+                    path     : '/hello',
+                    segments : ['hello'],
+                    xyz      : 123
+                }]
+            ])
+        }
+    });
+});
+
+test('router.route() static routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
@@ -53,7 +350,7 @@ test('route() static routes', () => {
     assertEquals(router.route('POST', '/hello'), undefined);
 });
 
-test('route() dynamic routes', () => {
+test('router.route() dynamic routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
@@ -74,7 +371,7 @@ test('route() dynamic routes', () => {
     assertEquals(router.route('POST', '/users/abc'), undefined);
 });
 
-test('route() wildcard method routes', () => {
+test('router.route() wildcard method routes', () => {
     const router = new Router();
     router.add({
         method : '*',
@@ -100,4 +397,13 @@ test('route() wildcard method routes', () => {
         segments : ['users', '{userId}'],
         xyz      : 123
     });
+});
+
+test('router.route() not found', () => {
+    const router = new Router({
+        method : '*',
+        path   : '/one',
+        xyz    : 123
+    });
+    assertEquals(router.route('GET', '/two'), undefined);
 });
