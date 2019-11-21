@@ -94,6 +94,7 @@ const response = await server.inject({
    - [`server.route(route)`](#serverrouteroute)
    - [`server.router`](#serverrouter)
    - [`server.start()`](#serverstart)
+   - [`server.stop()`](#serverstop)
  - [Request](#request-1)
    - [`request.body()`](#requestbody)
    - [`request.bodyStream()`](#requestbodystream)
@@ -257,6 +258,10 @@ Returns a `Promise` that resolves when the server is listening.
 await server.start();
 console.log('Listening for requests');
 ```
+
+#### server.stop()
+
+Stops accepting new requests. Any existing requests that are being processed will not be interrupted.
 
 ### Request
 
