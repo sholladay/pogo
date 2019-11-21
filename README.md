@@ -4,7 +4,7 @@
 
 Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.19.0 and higher.*
+*Supports Deno v0.24.0 and higher.*
 
 ## Contents
 
@@ -27,18 +27,16 @@ import pogo from 'https://deno.land/x/pogo/main.js';
 
 const server = pogo.server({ port : 3000 });
 
-server.route({
-    method : 'GET',
-    path   : '/',
-    handler() {
-        return 'Hello, world!';
-    }
+server.router.get('/', () => {
+    return 'Hello, world!';
 });
 
 server.start();
 ```
 
 ### Adding routes
+
+> A route matches an incoming request to a handler function that creates a response.
 
 Adding routes is easy, just call [`server.route()`](#serverrouteroute) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
 
@@ -62,7 +60,7 @@ server.route([
 });
 ```
 
-You can also configure the route to handle multiple methods by using an array, or `*` to handle all possible methods.
+You can also configure the route to handle multiple methods by using an array, or `'*'` to handle all possible methods.
 
 ```js
 server.route({ method : ['GET', 'POST'], path : '/hi', handler : () => 'Hello!' });
@@ -88,7 +86,8 @@ const response = await server.inject({
 
 ## API
 
- - [`server = pogo.server(option)`](#server--pogoserveroption)
+ - [`pogo.server(option)`](#pogoserveroption)
+ - [`pogo.router(option)`](#pogorouteroption)
  - [Server](#server)
    - [`server.inject(request)`](#serverinjectrequest)
    - [`server.route(route)`](#serverrouteroute)
@@ -140,9 +139,13 @@ const response = await server.inject({
    - [`router.put(route)`](#routerputroute)
    - [`router.routes`](#routerroutes)
 
-### server = pogo.server(option)
+### pogo.server(option)
 
-Returns a server instance, which can then be used to add routes and start listening for requests.
+Returns a [`Server`](#server) instance, which can then be used to add routes and start listening for requests.
+
+```js
+const server = pogo.server();
+```
 
 #### option
 
@@ -153,14 +156,22 @@ Type: `object`
 Type: `string`<br>
 Default: `'localhost'`
 
-Specifies which domain or IP address the server will listen on when `server.start()` is called. Use `0.0.0.0` to listen on any hostname.
+Specifies which domain or IP address the server will listen on when [`server.start()`](#serverstart) is called. Use `'0.0.0.0'` to listen on all available addresses.
 
 ##### port
 
 Type: `number`<br>
 Example: `3000`
 
-Specifies which port number the server will listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on any available port.
+Specifies which port number the server will listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on an available port assigned by the operating system.
+
+### pogo.router(option)
+
+Returns a [`Router`](#router) instance, which can then be used to add routes.
+
+```js
+const router = pogo.router();
+```
 
 ### Server
 
@@ -170,7 +181,14 @@ The `server` object returned by `pogo.server()` represents your [web server](htt
 
 Performs a request directly to the server without using the network. Useful when writing tests, to avoid conflicts from multiple servers trying to listen on the same port number.
 
-Returns a `Promise` for a `Response` instance.
+Returns a `Promise` for a [`Response`](#response) instance.
+
+```js
+const response = await server.inject({
+    method : 'GET',
+    url    : '/'
+});
+```
 
 ##### request
 
@@ -178,9 +196,15 @@ Type: `object`
 
 ###### method
 
+Type: `string`<br>
+Example: `'GET'`
+
 Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), such as `GET` or `POST`. Used to lookup the route handler.
 
 ###### url
+
+Type: `string`<br>
+Example: `'/'`
 
 Any valid URL path. Used to lookup the route handler.
 
@@ -188,9 +212,9 @@ Any valid URL path. Used to lookup the route handler.
 #### server.route(route, handler)
 #### server.route(route, options, handler)
 
-> A route matches an incoming request to a handler function that generates a response.
+Adds a route to the server so that the server knows how to respond to requests that match the given [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) and URL path. Shortcut for `server.router.add()`.
 
-Adds a route to the server so that the server knows how to respond to requests that match the given HTTP [method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) and URL path. Shortcut for `server.router.add()`.
+Returns the server so other methods can be chained.
 
 ```js
 server.route({ method : 'GET', path : '/', handler : () => 'Hello, World!' });
@@ -202,16 +226,16 @@ server.route({ method : 'GET', path : '/' }, () => 'Hello, World!');
 server.route('/', { method : 'GET' }, () => 'Hello, World!');
 ```
 
-##### option
+##### route
 
-Type: `object` | `array<object>` | `Router`
+Type: `object` | `Router` | `Array<object | Router>`
 
 ###### method
 
-Type: `string` | `array<string>`<br>
-Example: `GET`
+Type: `string` | `Array<string>`<br>
+Example: `'GET'`
 
-Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), or `*` to match all methods. Used to limit which requests will trigger the route handler.
+Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), array of methods, or `'*'` to match all methods. Used to limit which requests will trigger the route handler.
 
 ###### path
 
@@ -226,7 +250,7 @@ Supports path parameters with dynamic values, which can be accessed in the handl
 
 Type: `function`
 
- - `request` is a [Request](#request) instance with properties for `headers`, `method`, `url`, and more.
+ - `request` is a [`Request`](#request) instance with properties for `headers`, `method`, `url`, and more.
  - `h` is a [Response Toolkit](#response-toolkit) instance, which has utility methods for modifying the response.
 
 The implementation for the route that handles requests. Called when a request is received that matches the `method` and `path` specified in the route options.
@@ -235,7 +259,7 @@ The handler must return one of:
  - A `string`, which will be sent as HTML.
  - An `object`, which will be [stringified](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and sent as JSON.
  - A [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), which will be sent as-is (raw bytes).
- - A [Response](#response), which will send the `response.body`, if any.
+ - A [`Response`](#response), which will send the `response.body`, if any.
  - Any object that implements the [`Reader`](https://deno.land/typedoc/interfaces/_deno_.reader.html) interface, such as a [`File`](https://deno.land/typedoc/classes/_deno_.file.html) or [`Buffer`](https://deno.land/typedoc/classes/_deno_.buffer.html).
  - An [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error), which will send an appropriate HTTP error code - returning an error is the same as `throw`ing it.
  - A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) for any of the above types.
@@ -262,6 +286,13 @@ console.log('Listening for requests');
 #### server.stop()
 
 Stops accepting new requests. Any existing requests that are being processed will not be interrupted.
+
+Returns a `Promise` that resolves when the server has stopped listening.
+
+```js
+await server.stop();
+console.log('Stopped listening for requests');
+```
 
 ### Request
 
@@ -555,7 +586,7 @@ const router = pogo.router().add('/', { method : '*' }, () => 'Hello, World!');
 
 #### router.all(route)
 
-Shortcut for `router.add()`, with `*` as the default HTTP method,
+Shortcut for `router.add()`, with `'*'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -565,7 +596,7 @@ const router = pogo.router().all('/', () => 'Hello, World!');
 
 #### router.delete(route)
 
-Shortcut for `router.add()`, with `DELETE` as the default HTTP method,
+Shortcut for `router.add()`, with `'DELETE'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -575,7 +606,7 @@ const router = pogo.router().delete('/', () => 'Hello, World!');
 
 #### router.get(route)
 
-Shortcut for `router.add()`, with `GET` as the default HTTP method,
+Shortcut for `router.add()`, with `'GET'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -585,19 +616,19 @@ const router = pogo.router().get('/', () => 'Hello, World!');
 
 #### router.patch(route)
 
-Shortcut for `router.add()`, with `PATCH` as the default HTTP method,
+Shortcut for `router.add()`, with `'PATCH'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
 #### router.post(route)
 
-Shortcut for `router.add()`, with `POST` as the default HTTP method,
+Shortcut for `router.add()`, with `'POST'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
 #### router.put(route)
 
-Shortcut for `router.add()`, with `PUT` as the default HTTP method,
+Shortcut for `router.add()`, with `'PUT'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 

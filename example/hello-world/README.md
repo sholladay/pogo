@@ -13,7 +13,7 @@ In `run.js`, you can see what it is like to configure and start the server, add 
 The fastest way to run the example is to use its URL:
 
 ```sh
-deno https://deno.land/x/pogo/example/hello-world/run.js
+deno -A https://deno.land/x/pogo/example/hello-world/run.js
 ```
 
 ### Local
@@ -22,7 +22,7 @@ Alternatively, if you want to play around with the example, run it from a local 
 
 ```sh
 curl -fsSL https://github.com/sholladay/pogo/archive/master.tar.gz | tar -x --strip-components=1 'pogo-master/example'
-deno example/hello-world/run.js
+deno -A example/hello-world/run.js
 ```
 
 ## What's next?
