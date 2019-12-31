@@ -19,6 +19,7 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
  - Designed to encourage reliable and testable applications.
  - Routes are simple, pure functions that return values directly.
  - Automatic JSON responses from objects.
+ - Built-in support for React and JSX.
 
 ## Usage
 
@@ -36,7 +37,7 @@ server.start();
 
 ### Adding routes
 
-> A route matches an incoming request to a handler function that creates a response.
+> A route matches an incoming request to a handler function that creates a response
 
 Adding routes is easy, just call [`server.route()`](#serverrouteroute) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
 
@@ -65,8 +66,25 @@ You can also configure the route to handle multiple methods by using an array, o
 ```js
 server.route({ method : ['GET', 'POST'], path : '/hi', handler : () => 'Hello!' });
 ```
+
 ```js
 server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
+```
+
+### React and JSX support
+
+> [JSX](https://reactjs.org/docs/introducing-jsx.html) is a shorthand syntax for JavaScript that looks like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and is useful for constructing web pages
+
+You can do server-side rendering of [React](https://reactjs.org/) inside of route handlers, using either JSX or `React.createElement()`.
+
+Pogo automatically renders React elements using [`ReactDOMServer.renderToString()`](https://reactjs.org/docs/react-dom-server.html#rendertostring) and sends the response as HTML.
+
+```jsx
+import React from 'https://dev.jspm.io/react';
+// ...
+server.router.get('/', () => {
+    return <p>Hello, world!</p>;
+});
 ```
 
 ### Writing tests

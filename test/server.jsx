@@ -1,3 +1,4 @@
+import { React } from '../dependencies.js';
 import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
 import * as bang from '../lib/bang.js';
 import pogo from '../main.js';
@@ -23,6 +24,27 @@ test('server.route() HTML response for string', async () => {
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertEquals(response.body, encoder.encode('hi'));
+});
+
+test('server.route() HTML response for JSX', async () => {
+    const server = pogo.server();
+    let called = false;
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler() {
+            called = true;
+            return <p>Supports JSX</p>;
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(called, true);
+    assertStrictEq(response.status, 200);
+    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertEquals(response.body, encoder.encode('<p data-reactroot="">Supports JSX</p>'));
 });
 
 test('server.route() JSON response for plain object', async () => {
