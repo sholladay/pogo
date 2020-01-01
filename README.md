@@ -246,7 +246,7 @@ server.route('/', { method : 'GET' }, () => 'Hello, World!');
 
 ##### route
 
-Type: `object` | `Router` | `Array<object | Router>`
+Type: `object` | `string` | `Router` | `Array<object | string | Router>`
 
 ###### method
 
@@ -571,9 +571,11 @@ Returns the response so other methods can be chained.
 
 ### Router
 
-A router is used to store routes, which match an incoming request to a handler function that generates a response. A router can be given to `server.route()` to expose the routes over HTTP. Routers can also be combined with `router.add()`.
+A router is used to store and lookup routes. The server has a built-in router at [`server.router`](#serverrouter), which it uses to match an incoming request to a route handler function that generates a response. You can use the server's router directly or you can create a custom router with `pogo.router()`.
 
-Note that you don't necessarily need to create a router yourself. The server has a default router that you can add routes to using `server.router` or `server.route()`. You only need to create your own router if you prefer the chaining syntax for defining routes and you want to export the routes from a different file than where the server is created. In other words, it's useful for larger applications.
+To copy routes from one router to another, see [`router.add()`](#routeraddroute). You can pass a custom router to `server.route()` or `server.router.add()` to copy its routes into the server's built-in router, thus making those routes available to incoming requests.
+
+Note that you don't necessarily need to create a custom router. You only need to create your own router if you prefer the chaining syntax for defining routes and you want to export the routes from a file that doesn't have access to the server. In other words, a custom router is useful for larger applications.
 
 ```js
 const server = pogo.server();
@@ -586,15 +588,39 @@ server.router
     });
 ```
 
+```js
+const router = pogo.router()
+    .get('/', () => {
+      return 'Hello, World!';
+    })
+    .get('/status', () => {
+      return 'Everything is swell!';
+    });
+
+const server = pogo.server();
+server.route(router);
+```
+
 #### router.add(route)
 #### router.add(route, options)
 #### router.add(route, options, handler)
 
-Adds a new route to the routing table, which a server can use to lookup a route handler for an incoming request.
+Adds one or more routes to the routing table, which makes them available for lookup, e.g. by a server trying to match an incoming request to a handler function.
 
-The normal way to add a route is with a `route` object that has `method`, `path`, and `handler` properties.
+The `route` argument can be:
+ - A route object with optional properties for `method`, `path`, and `handler`
+   - `method` is an HTTP method string or array of strings
+   - `path` is a URL path string
+   - `handler` is a function
+ - A string, where it will be used as the path
+ - A `Router` instance, where its routing table will be copied
+ - An array of the above types
 
-If `route` is a string, it will be used as the path. The `handler` function can be a property of the `route` object, options object, or it can be a standalone agument.
+The `options` argument can be a route object (same as `route`) or a function, where it will be used as the handler.
+
+The `handler` function can be a property of a `route` object, a property of the `options` object, or it can be a standalone argument.
+
+Each argument has higher precedence than the previous argument, allowing you to pass in a route but override its handler, for example, by simply passing a handler as the final argument.
 
 Returns the router so other methods can be chained.
 
@@ -604,7 +630,7 @@ const router = pogo.router().add('/', { method : '*' }, () => 'Hello, World!');
 
 #### router.all(route)
 
-Shortcut for `router.add()`, with `'*'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'*'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -614,7 +640,7 @@ const router = pogo.router().all('/', () => 'Hello, World!');
 
 #### router.delete(route)
 
-Shortcut for `router.add()`, with `'DELETE'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'DELETE'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -624,7 +650,7 @@ const router = pogo.router().delete('/', () => 'Hello, World!');
 
 #### router.get(route)
 
-Shortcut for `router.add()`, with `'GET'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'GET'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -634,19 +660,19 @@ const router = pogo.router().get('/', () => 'Hello, World!');
 
 #### router.patch(route)
 
-Shortcut for `router.add()`, with `'PATCH'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'PATCH'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
 #### router.post(route)
 
-Shortcut for `router.add()`, with `'POST'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'POST'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
 #### router.put(route)
 
-Shortcut for `router.add()`, with `'PUT'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with `'PUT'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
