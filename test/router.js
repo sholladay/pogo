@@ -332,7 +332,7 @@ test('router.get(path, options, handler)', () => {
     });
 });
 
-test('router.route() static routes', () => {
+test('router.lookup() static routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
@@ -340,17 +340,17 @@ test('router.route() static routes', () => {
         xyz    : 123
     });
 
-    assertEquals(router.route('GET', '/hello'), {
+    assertEquals(router.lookup('GET', '/hello'), {
         method   : 'GET',
         params   : {},
         path     : '/hello',
         segments : ['hello'],
         xyz      : 123
     });
-    assertEquals(router.route('POST', '/hello'), undefined);
+    assertEquals(router.lookup('POST', '/hello'), undefined);
 });
 
-test('router.route() dynamic routes', () => {
+test('router.lookup() dynamic routes', () => {
     const router = new Router();
     router.add({
         method : 'GET',
@@ -358,7 +358,7 @@ test('router.route() dynamic routes', () => {
         xyz    : 123
     });
 
-    assertEquals(router.route('GET', '/users/abc'), {
+    assertEquals(router.lookup('GET', '/users/abc'), {
         method : 'GET',
         params : {
             api    : 'users',
@@ -368,10 +368,10 @@ test('router.route() dynamic routes', () => {
         segments : ['{api}', '{userId}'],
         xyz      : 123
     });
-    assertEquals(router.route('POST', '/users/abc'), undefined);
+    assertEquals(router.lookup('POST', '/users/abc'), undefined);
 });
 
-test('router.route() wildcard method routes', () => {
+test('router.lookup() wildcard method routes', () => {
     const router = new Router();
     router.add({
         method : '*',
@@ -379,7 +379,7 @@ test('router.route() wildcard method routes', () => {
         xyz    : 123
     });
 
-    assertEquals(router.route('GET', '/users/abc'), {
+    assertEquals(router.lookup('GET', '/users/abc'), {
         method : '*',
         params : {
             userId : 'abc'
@@ -388,7 +388,7 @@ test('router.route() wildcard method routes', () => {
         segments : ['users', '{userId}'],
         xyz      : 123
     });
-    assertEquals(router.route('POST', '/users/abc'), {
+    assertEquals(router.lookup('POST', '/users/abc'), {
         method : '*',
         params : {
             userId : 'abc'
@@ -399,11 +399,11 @@ test('router.route() wildcard method routes', () => {
     });
 });
 
-test('router.route() not found', () => {
+test('router.lookup() not found', () => {
     const router = new Router({
         method : '*',
         path   : '/one',
         xyz    : 123
     });
-    assertEquals(router.route('GET', '/two'), undefined);
+    assertEquals(router.lookup('GET', '/two'), undefined);
 });

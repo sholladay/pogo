@@ -640,7 +640,7 @@ const router = pogo.router().all('/', () => 'Hello, World!');
 
 #### router.delete(route)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'DELETE'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with [`'DELETE'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -650,7 +650,7 @@ const router = pogo.router().delete('/', () => 'Hello, World!');
 
 #### router.get(route)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'GET'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with [`'GET'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -658,27 +658,41 @@ Returns the router so other methods can be chained.
 const router = pogo.router().get('/', () => 'Hello, World!');
 ```
 
+#### router.lookup(method, path)
+
+Look up a route that matches the given `method` and `path`.
+
+Returns the route object with an additional `params` property that contains path parameter names and values.
+
 #### router.patch(route)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'PATCH'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with [`'PATCH'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH) as the default HTTP method.
 
 Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().patch('/', () => 'Hello, World!');
+```
 
 #### router.post(route)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'POST'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with [`'POST'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) as the default HTTP method.
 
 Returns the router so other methods can be chained.
+
+```js
+const router = pogo.router().post('/', () => 'Hello, World!');
+```
 
 #### router.put(route)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'PUT'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute), with [`'PUT'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
-#### router.route(method, path)
-
-Look up a route that matches the given `method` and `path`.
+```js
+const router = pogo.router().put('/', () => 'Hello, World!');
+```
 
 #### router.routes
 
