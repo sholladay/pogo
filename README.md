@@ -75,9 +75,9 @@ server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 
 > [JSX](https://reactjs.org/docs/introducing-jsx.html) is a shorthand syntax for JavaScript that looks like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and is useful for constructing web pages
 
-You can do server-side rendering of [React](https://reactjs.org/) inside of route handlers, using either JSX or `React.createElement()`.
+You can do webpage templating with [React](https://reactjs.org/) inside of route handlers, using either JSX or `React.createElement()`.
 
-Pogo automatically renders React elements using [`ReactDOMServer.renderToString()`](https://reactjs.org/docs/react-dom-server.html#rendertostring) and sends the response as HTML.
+Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
 ```jsx
 import React from 'https://dev.jspm.io/react';

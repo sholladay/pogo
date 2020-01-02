@@ -44,7 +44,7 @@ test('server.route() HTML response for JSX', async () => {
     assertStrictEq(called, true);
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(response.body, encoder.encode('<p data-reactroot="">Supports JSX</p>'));
+    assertEquals(response.body, encoder.encode('<p>Supports JSX</p>'));
 });
 
 test('server.route() JSON response for plain object', async () => {
