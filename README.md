@@ -130,6 +130,7 @@ const response = await server.inject({
    - [`request.search`](#requestsearch)
    - [`request.searchParams`](#requestsearchparams)
    - [`request.server`](#requestserver)
+   - [`request.state`](#requeststate)
    - [`request.url`](#requesturl)
  - [Response](#response)
    - [`response.body`](#responsebody)
@@ -141,9 +142,11 @@ const response = await server.inject({
    - [`response.permanent()`](#responsepermanent)
    - [`response.redirect(url)`](#responseredirecturl)
    - [`response.rewritable(isRewritable)`](#responserewritableisrewritable)
+   - [`response.state(name, value)`](#responsestatename-value)
    - [`response.status`](#responsestatus)
    - [`response.temporary()`](#responsetemporary)
    - [`response.type(mediaType)`](#responsetypemediatype)
+   - [`response.unstate(name)`](#responseunstatename)
  - [Response Toolkit](#response-toolkit)
    - [`h.redirect(url)`](#hredirecturl)
    - [`h.response(body)`](#hresponsebody)
@@ -443,6 +446,12 @@ Type: [`Server`](#server)
 
 The server that is handling the request.
 
+#### request.state
+
+Type: `object`
+
+The value of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, parsed into name/value pairs, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
+
 #### request.url
 
 Type: [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
@@ -528,6 +537,20 @@ Sets the response status to [`301 Moved Permanently`](https://developer.mozilla.
 
 Returns the response so other methods can be chained.
 
+#### response.state(name, value)
+
+Sets the [`Set-Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie) header to create a cookie with the given `name` and `value`. Cookie options can be specified by using an object for `value`. See Deno's [cookie](https://github.com/denoland/deno/blob/a61966a243cd5d09031fabd9a572a75aab8d2da8/std/http/cookie.ts#L12-L23) interface for the available options.
+
+Returns the response so other methods can be chained.
+
+All of the following forms are supported:
+
+```js
+response.state('color', 'blue');
+response.state('color', { value : 'blue' });
+response.state({ name : 'color', value : 'blue' });
+```
+
 #### response.status
 
 Type: `number`<br>
@@ -548,6 +571,12 @@ Returns the response so other methods can be chained.
 Sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header on the response to the value of `mediaType`.
 
 Overrides the media type that is set automatically by the framework.
+
+Returns the response so other methods can be chained.
+
+#### response.unstate(name)
+
+Sets the [`Set-Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie) header to clear the cookie given by `name`.
 
 Returns the response so other methods can be chained.
 

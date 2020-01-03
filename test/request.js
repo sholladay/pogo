@@ -418,6 +418,37 @@ test('request.server is a Server instance', async () => {
     })));
 });
 
+test('request.state is an object with cookies', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler(request) {
+            return {
+                science : request.state.science,
+                type    : typeof request.state,
+                value   : request.state
+            };
+        }
+    });
+    const response = await server.inject({
+        headers : new Headers({
+            cookie : 'science=rocket'
+        }),
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 200);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, encoder.encode(JSON.stringify({
+        science : 'rocket',
+        type    : 'object',
+        value   : {
+            science : 'rocket'
+        }
+    })));
+});
+
 test('request.url is a URL instance', async () => {
     const server = pogo.server();
     server.route({

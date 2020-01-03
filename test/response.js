@@ -93,6 +93,25 @@ test('response.location() set location header', async () => {
     assertEquals(response.body, encoder.encode('hi'));
 });
 
+test('response.state() set cookie', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler(request, h) {
+            return h.response('').state('sesh', 'nomnomnom');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 200);
+    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(response.headers.get('set-cookie'), 'sesh=nomnomnom; Secure; HttpOnly; SameSite=Strict');
+    assertEquals(response.body, encoder.encode(''));
+});
+
 test('response.type() override default content-type handling', async () => {
     const server = pogo.server();
     server.route({
@@ -109,4 +128,23 @@ test('response.type() override default content-type handling', async () => {
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'weird/type');
     assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
+});
+
+test('response.unstate() clear cookie', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/',
+        handler(request, h) {
+            return h.response('').unstate('mwahaha');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEq(response.status, 200);
+    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(response.headers.get('set-cookie'), 'mwahaha=; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+    assertEquals(response.body, encoder.encode(''));
 });
