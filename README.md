@@ -4,7 +4,7 @@
 
 Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.24.0 and higher.*
+*Supports Deno v0.28.1 and higher.*
 
 ## Contents
 
@@ -114,7 +114,6 @@ const response = await server.inject({
    - [`server.stop()`](#serverstop)
  - [Request](#request-1)
    - [`request.body()`](#requestbody)
-   - [`request.bodyStream()`](#requestbodystream)
    - [`request.headers`](#requestheaders)
    - [`request.host`](#requesthost)
    - [`request.hostname`](#requesthostname)
@@ -321,17 +320,27 @@ The `request` object passed to route handlers represents an HTTP [request](https
 
 It provides properties and methods for inspecting the content of the request.
 
-#### request.body()
+#### request.body
 
-Returns a `Promise` for a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) containing the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body).
+Type: [`Reader`](https://deno.land/typedoc/interfaces/deno.reader.html)
 
-Note that calling this method will cause the entire body to be read into memory, which is convenient, but may be inappropriate for requests with a very large body. See [`request.bodyStream()`](#requestbodystream) to get the body as a stream, which will improve latency and lower memory usage.
+The HTTP [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) value.
 
-#### request.bodyStream()
+You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `Deno.EOF` when the body is finished being read.
 
-Returns an `AsyncGenerator` object, which is an async iterable and async iterator that provides the raw bytes of the request [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) in chunks. Useful for requests with a very large body, because streaming is low-latency and memory efficient.
+```js
+const decoder = new TextDecoder();
+const buffer = new Uint8Array(20);
+const numBytesRead = await request.body.read(buffer);
+const bodyText = decoder.decode(buffer.subarray(0, numBytesRead));
+```
 
-See [`request.body()`](#requestbody) to get the entire body all at once.
+To get the body as a string, pass it to `Deno.readAll()` and decode the result, as shown below. Note that doing so will cause the entire body to be read into memory all at once, which is convenient, but may be inappropriate for requests with a very large body.
+
+```js
+const decoder = new TextDecoder();
+const bodyText = decoder.decode(await Deno.readAll(request.body));
+```
 
 #### request.headers
 
@@ -450,7 +459,7 @@ The server that is handling the request.
 
 Type: `object`
 
-The value of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, parsed into name/value pairs, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
+Contains all name/value pairs of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
 
 #### request.url
 
