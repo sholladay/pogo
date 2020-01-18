@@ -1,9 +1,7 @@
-import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import { assertStrictEq, test } from '../dev-dependencies.js';
 import Response from '../lib/response.js';
 import Server from '../lib/server.js';
 import pogo from '../main.js';
-
-const encoder = new TextEncoder();
 
 test('request.headers is a Headers instance', async () => {
     const server = pogo.server();
@@ -24,11 +22,11 @@ test('request.headers is a Headers instance', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isHeadersInstance : true,
         hostHeader        : 'localhost',
         type              : 'object'
-    })));
+    }));
 });
 
 test('request.host is a hostname and port', async () => {
@@ -51,12 +49,12 @@ test('request.host is a hostname and port', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isSameAsHeader : true,
         isSameAsUrl    : true,
         type           : 'string',
         value          : 'localhost'
-    })));
+    }));
 });
 
 test('request.hostname is a domain or IP address', async () => {
@@ -79,12 +77,12 @@ test('request.hostname is a domain or IP address', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isInHostHeader : true,
         isSameAsUrl    : true,
         type           : 'string',
         value          : 'localhost'
-    })));
+    }));
 });
 
 test('request.href is a full URL string', async () => {
@@ -106,11 +104,11 @@ test('request.href is a full URL string', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : 'http://localhost/'
-    })));
+    }));
 });
 
 test('request.method is an HTTP method', async () => {
@@ -131,10 +129,10 @@ test('request.method is an HTTP method', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isGet : true,
         type  : 'string'
-    })));
+    }));
 });
 
 test('request.origin is a protocol and host', async () => {
@@ -156,11 +154,11 @@ test('request.origin is a protocol and host', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : 'http://localhost'
-    })));
+    }));
 });
 
 test('request.params contains path variables', async () => {
@@ -182,13 +180,13 @@ test('request.params contains path variables', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         type   : 'object',
         userId : '123',
         value  : {
             userId : '123'
         }
-    })));
+    }));
 });
 
 test('request.path is a URL path string', async () => {
@@ -210,11 +208,11 @@ test('request.path is a URL path string', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : '/'
-    })));
+    }));
 });
 
 test('request.raw is the original request', async () => {
@@ -235,10 +233,10 @@ test('request.raw is the original request', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isGet : true,
         type  : 'object'
-    })));
+    }));
 });
 
 test('request.referrer is a referrer URL string', async () => {
@@ -268,18 +266,18 @@ test('request.referrer is a referrer URL string', async () => {
     });
     assertStrictEq(withoutResponse.status, 200);
     assertStrictEq(withoutResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(withoutResponse.body, encoder.encode(JSON.stringify({
+    assertStrictEq(withoutResponse.body, JSON.stringify({
         isRefererHeader : false,
         type            : 'string',
         value           : ''
-    })));
+    }));
     assertStrictEq(withResponse.status, 200);
     assertStrictEq(withResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(withResponse.body, encoder.encode(JSON.stringify({
+    assertStrictEq(withResponse.body, JSON.stringify({
         isRefererHeader : true,
         type            : 'string',
         value           : 'https://example.com'
-    })));
+    }));
 });
 
 test('request.response is a Response instance', async () => {
@@ -300,10 +298,10 @@ test('request.response is a Response instance', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isResponseInstance : true,
         type               : 'object'
-    })));
+    }));
 });
 
 test('request.route is a router record', async () => {
@@ -328,7 +326,7 @@ test('request.route is a router record', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         handlerType : 'function',
         method      : '*',
         params      : {
@@ -337,7 +335,7 @@ test('request.route is a router record', async () => {
         path     : '/{api}',
         segments : ['{api}'],
         type     : 'object'
-    })));
+    }));
 });
 
 test('request.search is a URL search string', async () => {
@@ -359,11 +357,11 @@ test('request.search is a URL search string', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : '?query'
-    })));
+    }));
 });
 
 test('request.searchParams is a URLSearchParams instance', async () => {
@@ -386,12 +384,12 @@ test('request.searchParams is a URLSearchParams instance', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         asString         : 'query=',
         isSameAsUrl      : true,
         isParamsInstance : true,
         type             : 'object'
-    })));
+    }));
 });
 
 test('request.server is a Server instance', async () => {
@@ -412,10 +410,10 @@ test('request.server is a Server instance', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         isServerInstance : true,
         type             : 'object'
-    })));
+    }));
 });
 
 test('request.state is an object with cookies', async () => {
@@ -440,13 +438,13 @@ test('request.state is an object with cookies', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         science : 'rocket',
         type    : 'object',
         value   : {
             science : 'rocket'
         }
-    })));
+    }));
 });
 
 test('request.url is a URL instance', async () => {
@@ -469,10 +467,10 @@ test('request.url is a URL instance', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         asString      : 'http://localhost/',
         href          : 'http://localhost/',
         isUrlInstance : true,
         type          : 'object'
-    })));
+    }));
 });

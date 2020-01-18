@@ -1,9 +1,7 @@
 import { React } from '../dependencies.js';
-import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import { assertStrictEq, test } from '../dev-dependencies.js';
 import * as bang from '../lib/bang.js';
 import pogo from '../main.js';
-
-const encoder = new TextEncoder();
 
 test('server.route() HTML response for string', async () => {
     const server = pogo.server();
@@ -23,7 +21,7 @@ test('server.route() HTML response for string', async () => {
     assertStrictEq(called, true);
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(response.body, encoder.encode('hi'));
+    assertStrictEq(response.body, 'hi');
 });
 
 test('server.route() HTML response for JSX', async () => {
@@ -44,7 +42,7 @@ test('server.route() HTML response for JSX', async () => {
     assertStrictEq(called, true);
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(response.body, encoder.encode('<p>Supports JSX</p>'));
+    assertStrictEq(response.body, '<p>Supports JSX</p>');
 });
 
 test('server.route() JSON response for plain object', async () => {
@@ -65,7 +63,7 @@ test('server.route() JSON response for plain object', async () => {
     assertStrictEq(called, true);
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({ foo : 'bar' })));
+    assertStrictEq(response.body, JSON.stringify({foo: 'bar'}));
 });
 
 test('server.route() JSON response for boolean', async () => {
@@ -94,10 +92,10 @@ test('server.route() JSON response for boolean', async () => {
     });
     assertStrictEq(responseFalse.status, 200);
     assertStrictEq(responseFalse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(responseFalse.body, encoder.encode(JSON.stringify(false)));
+    assertStrictEq(responseFalse.body, JSON.stringify(false));
     assertStrictEq(responseTrue.status, 200);
     assertStrictEq(responseTrue.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(responseTrue.body, encoder.encode(JSON.stringify(true)));
+    assertStrictEq(responseTrue.body, JSON.stringify(true));
 });
 
 test('server.route() JSON response for number', async () => {
@@ -126,10 +124,10 @@ test('server.route() JSON response for number', async () => {
     });
     assertStrictEq(responseZero.status, 200);
     assertStrictEq(responseZero.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(responseZero.body, encoder.encode(JSON.stringify(0)));
+    assertStrictEq(responseZero.body, JSON.stringify(0));
     assertStrictEq(responseOne.status, 200);
     assertStrictEq(responseOne.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(responseOne.body, encoder.encode(JSON.stringify(1)));
+    assertStrictEq(responseOne.body, JSON.stringify(1));
 });
 
 test('server.route() empty response for null', async () => {
@@ -147,7 +145,7 @@ test('server.route() empty response for null', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.has('content-type'), false);
-    assertEquals(response.body, encoder.encode(''));
+    assertStrictEq(response.body, '');
 });
 
 test('server.route() error response for undefined', async () => {
@@ -165,11 +163,11 @@ test('server.route() error response for undefined', async () => {
     });
     assertStrictEq(response.status, 500);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
-    })));
+    }));
 });
 
 test('server.route() with dynamic path', async () => {
@@ -187,7 +185,7 @@ test('server.route() with dynamic path', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({ userId : '123' })));
+    assertStrictEq(response.body, JSON.stringify({ userId : '123' }));
 });
 
 test('server.route() can be chained', async () => {
@@ -217,10 +215,10 @@ test('server.route() can be chained', async () => {
     });
     assertStrictEq(responseA.status, 200);
     assertStrictEq(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(responseA.body, encoder.encode('a'));
+    assertStrictEq(responseA.body, 'a');
     assertStrictEq(responseB.status, 200);
     assertStrictEq(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(responseB.body, encoder.encode('b'));
+    assertStrictEq(responseB.body, 'b');
 });
 
 test('server.route() array of routes', async () => {
@@ -251,10 +249,10 @@ test('server.route() array of routes', async () => {
     });
     assertStrictEq(responseA.status, 200);
     assertStrictEq(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(responseA.body, encoder.encode('a'));
+    assertStrictEq(responseA.body, 'a');
     assertStrictEq(responseB.status, 200);
     assertStrictEq(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(responseB.body, encoder.encode('b'));
+    assertStrictEq(responseB.body, 'b');
 });
 
 test('server.route() array of methods', async () => {
@@ -280,17 +278,17 @@ test('server.route() array of methods', async () => {
     });
     assertStrictEq(getResponse.status, 200);
     assertStrictEq(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(getResponse.body, encoder.encode('Hi, GET'));
+    assertStrictEq(getResponse.body, 'Hi, GET');
     assertStrictEq(postResponse.status, 200);
     assertStrictEq(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(postResponse.body, encoder.encode('Hi, POST'));
+    assertStrictEq(postResponse.body, 'Hi, POST');
     assertStrictEq(putResponse.status, 404);
     assertStrictEq(putResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(putResponse.body, encoder.encode(JSON.stringify({
+    assertStrictEq(putResponse.body, JSON.stringify({
         error   : 'Not Found',
         message : 'Not Found',
         status  : 404
-    })));
+    }));
 });
 
 test('server.route() wildcard method', async () => {
@@ -316,13 +314,13 @@ test('server.route() wildcard method', async () => {
     });
     assertStrictEq(getResponse.status, 200);
     assertStrictEq(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(getResponse.body, encoder.encode('Hi, GET'));
+    assertStrictEq(getResponse.body, 'Hi, GET');
     assertStrictEq(postResponse.status, 200);
     assertStrictEq(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(postResponse.body, encoder.encode('Hi, POST'));
+    assertStrictEq(postResponse.body, 'Hi, POST');
     assertStrictEq(putResponse.status, 200);
     assertStrictEq(putResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertEquals(putResponse.body, encoder.encode('Hi, PUT'));
+    assertStrictEq(putResponse.body, 'Hi, PUT');
 });
 
 test('server.route() handler returns Error', async () => {
@@ -340,11 +338,11 @@ test('server.route() handler returns Error', async () => {
     });
     assertStrictEq(response.status, 500);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
-    })));
+    }));
 });
 
 test('server.route() handler throws Error', async () => {
@@ -362,11 +360,11 @@ test('server.route() handler throws Error', async () => {
     });
     assertStrictEq(response.status, 500);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
-    })));
+    }));
 });
 
 test('server.route() handler returns bang.badRequest()', async () => {
@@ -384,11 +382,11 @@ test('server.route() handler returns bang.badRequest()', async () => {
     });
     assertStrictEq(response.status, 400);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         error   : 'Bad Request',
         message : 'Crazyyy',
         status  : 400
-    })));
+    }));
 });
 
 test('server.route() handler throws bang.badRequest()', async () => {
@@ -406,9 +404,9 @@ test('server.route() handler throws bang.badRequest()', async () => {
     });
     assertStrictEq(response.status, 400);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({
+    assertStrictEq(response.body, JSON.stringify({
         error   : 'Bad Request',
         message : 'Crazyyy',
         status  : 400
-    })));
+    }));
 });

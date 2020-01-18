@@ -4,7 +4,7 @@ import {
     assertStrictEq,
     runTests,
     test
-} from 'https://deno.land/std@v0.28.1/testing/mod.ts';
+} from 'https://deno.land/std@v0.30.0/testing/mod.ts';
 
 export {
     assert,

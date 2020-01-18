@@ -1,7 +1,5 @@
-import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import { assertStrictEq, test } from '../dev-dependencies.js';
 import pogo from '../main.js';
-
-const encoder = new TextEncoder();
 
 test('h.response() set JSON body', async () => {
     const server = pogo.server();
@@ -18,7 +16,7 @@ test('h.response() set JSON body', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, encoder.encode(JSON.stringify({ hello : 'world' })));
+    assertStrictEq(response.body, JSON.stringify({ hello : 'world' }));
 });
 
 test('h.redirect()', async () => {
@@ -70,17 +68,17 @@ test('h.redirect()', async () => {
     assertStrictEq(responseOne.status, 302);
     assertStrictEq(responseOne.headers.get('content-type'), null);
     assertStrictEq(responseOne.headers.get('location'), '/one');
-    assertEquals(responseOne.body, encoder.encode(''));
+    assertStrictEq(responseOne.body, '');
     assertStrictEq(responseTwo.status, 307);
     assertStrictEq(responseTwo.headers.get('content-type'), null);
     assertStrictEq(responseTwo.headers.get('location'), '/two');
-    assertEquals(responseTwo.body, encoder.encode(''));
+    assertStrictEq(responseTwo.body, '');
     assertStrictEq(responseThree.status, 301);
     assertStrictEq(responseThree.headers.get('content-type'), null);
     assertStrictEq(responseThree.headers.get('location'), '/three');
-    assertEquals(responseThree.body, encoder.encode(''));
+    assertStrictEq(responseThree.body, '');
     assertStrictEq(responseFour.status, 308);
     assertStrictEq(responseFour.headers.get('content-type'), null);
     assertStrictEq(responseFour.headers.get('location'), '/four');
-    assertEquals(responseFour.body, encoder.encode(''));
+    assertStrictEq(responseFour.body, '');
 });
