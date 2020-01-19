@@ -71,6 +71,19 @@ server.route({ method : ['GET', 'POST'], path : '/hi', handler : () => 'Hello!' 
 server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 ```
 
+### Serve static files
+
+You can use [`Deno.readFile()`](https://deno.land/typedoc/index.html#readfile) to serve the contents of a file from your filesystem.
+
+*Note that currently you must specify the content type of the file using `response.type()`. Future versions of Pogo will set the type automatically.*
+
+```js
+server.router.get('/', async (request, h) => {
+    const buffer = await Deno.readFile('./hello.jpg');
+    return h.response(buffer).type('image/jpeg');
+});
+```
+
 ### React and JSX support
 
 > [JSX](https://reactjs.org/docs/introducing-jsx.html) is a shorthand syntax for JavaScript that looks like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and is useful for constructing web pages
