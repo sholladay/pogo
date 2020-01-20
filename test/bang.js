@@ -1,4 +1,9 @@
-import { assert, assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import {
+    assert,
+    assertEquals,
+    assertStrictEq,
+    test
+} from '../dev-dependencies.js';
 import Response from '../lib/response.js';
 import * as bang from '../lib/bang.js';
 

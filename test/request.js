@@ -246,9 +246,9 @@ test('request.referrer is a referrer URL string', async () => {
         path   : '/',
         handler(request) {
             return {
-                isRefererHeader  : request.referrer === request.headers.get('referer'),
-                type             : typeof request.referrer,
-                value            : request.referrer
+                isRefererHeader : request.referrer === request.headers.get('referer'),
+                type            : typeof request.referrer,
+                value           : request.referrer
             };
         }
     });

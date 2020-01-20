@@ -39,7 +39,7 @@ test('new Router() dynamic route', () => {
                 segments : ['{username}'],
                 xyz      : 123
             }],
-            static  : new Map()
+            static : new Map()
         }
     });
 });
@@ -123,7 +123,7 @@ test('router.add() dynamic route', () => {
                 segments : ['{username}'],
                 xyz      : 123
             }],
-            static  : new Map()
+            static : new Map()
         }
     });
 });
@@ -227,8 +227,8 @@ test('router.add() array of routes', () => {
 test('router.get(options)', () => {
     const router = new Router();
     router.get({
-        path   : '/hello',
-        xyz    : 123
+        path : '/hello',
+        xyz  : 123
     });
 
     assertEquals(router.routes, {

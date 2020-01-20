@@ -84,7 +84,7 @@ test('server.route() JSON response for plain object', async () => {
     assertStrictEq(called, true);
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEq(response.body, JSON.stringify({foo: 'bar'}));
+    assertStrictEq(response.body, JSON.stringify({ foo : 'bar' }));
 });
 
 test('server.route() JSON response for boolean', async () => {
