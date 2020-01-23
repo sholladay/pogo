@@ -73,9 +73,9 @@ server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 
 ### Serve static files
 
-You can use [`Deno.readFile()`](https://deno.land/typedoc/index.html#readfile) to serve the contents of a file from your filesystem.
+You can use [`Deno.readFile()`](https://deno.land/typedoc/index.html#readfile) to serve the contents of a file from the filesystem.
 
-*Note that currently you must specify the content type of the file using `response.type()`. Future versions of Pogo will set the type automatically.*
+*Note that currently you should specify the content type of the file using `response.type()`. Future versions of Pogo will provide more egornomic APIs for static files that handle this automatically.*
 
 ```js
 server.router.get('/', async (request, h) => {
