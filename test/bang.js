@@ -80,3 +80,14 @@ test('new Bang() with error and 501 status', () => {
         status  : 501
     });
 });
+
+test('Bang.wrap() returns Bang instance as-is', () => {
+    const error = new bang.Bang();
+    assertStrictEq(bang.Bang.wrap(error), error);
+});
+
+test('Bang.wrap() constructs new Bang from string', () => {
+    const error = bang.Bang.wrap('hello');
+    assertEquals(error, new bang.Bang('hello'));
+    assertStrictEq(error.constructor, bang.Bang);
+});
