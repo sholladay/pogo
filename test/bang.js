@@ -1,11 +1,12 @@
 import {
     assert,
     assertEquals,
-    assertStrictEq,
-    test
+    assertStrictEq
 } from '../dev-dependencies.js';
 import Response from '../lib/response.js';
 import * as bang from '../lib/bang.js';
+
+const { test } = Deno;
 
 test('new Bang() is a 500 error by default', () => {
     const error = new bang.Bang();

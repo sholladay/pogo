@@ -1,15 +1,11 @@
 import {
     assert,
     assertEquals,
-    assertStrictEq,
-    runTests,
-    test
-} from 'https://deno.land/std@v0.30.0/testing/mod.ts';
+    assertStrictEq
+} from 'https://deno.land/std@v0.33.0/testing/asserts.ts';
 
 export {
     assert,
     assertEquals,
-    assertStrictEq,
-    runTests,
-    test
+    assertStrictEq
 };

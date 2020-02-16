@@ -1,7 +1,9 @@
 import { React } from '../dependencies.js';
-import { assertEquals, assertStrictEq, test } from '../dev-dependencies.js';
+import { assertEquals, assertStrictEq } from '../dev-dependencies.js';
 import * as bang from '../lib/bang.js';
 import pogo from '../main.js';
+
+const { test } = Deno;
 
 test('server.route() HTML response for string', async () => {
     const server = pogo.server();

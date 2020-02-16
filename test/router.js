@@ -1,5 +1,7 @@
-import { assertEquals, test } from '../dev-dependencies.js';
+import { assertEquals } from '../dev-dependencies.js';
 import Router from '../lib/router.js';
+
+const { test } = Deno;
 
 test('new Router() static route', () => {
     const router = new Router({

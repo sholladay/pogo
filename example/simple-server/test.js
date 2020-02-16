@@ -1,5 +1,7 @@
-import { assertStrictEq, runTests, test } from './dev-dependencies.js';
+import { assertStrictEq } from './dev-dependencies.js';
 import server from './main.js';
+
+const { runTests, test } = Deno;
 
 test('GET /', async () => {
     const response = await server.inject({
@@ -11,4 +13,4 @@ test('GET /', async () => {
     assertStrictEq(response.body, 'hi');
 });
 
-runTests();
+await runTests();

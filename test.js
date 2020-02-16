@@ -4,6 +4,5 @@ import './test/response.js';
 import './test/router.js';
 import './test/server.jsx';
 import './test/toolkit.js';
-import { runTests } from './dev-dependencies.js';
 
-runTests();
+await Deno.runTests();

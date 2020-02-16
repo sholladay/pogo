@@ -1,5 +1,7 @@
-import { assertStrictEq, test } from '../dev-dependencies.js';
+import { assertStrictEq } from '../dev-dependencies.js';
 import pogo from '../main.js';
+
+const { test } = Deno;
 
 test('response.code() set status code', async () => {
     const server = pogo.server();

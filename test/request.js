@@ -1,7 +1,9 @@
-import { assertStrictEq, test } from '../dev-dependencies.js';
+import { assertStrictEq } from '../dev-dependencies.js';
 import Response from '../lib/response.js';
 import Server from '../lib/server.js';
 import pogo from '../main.js';
+
+const { test } = Deno;
 
 test('request.headers is a Headers instance', async () => {
     const server = pogo.server();
