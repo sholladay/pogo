@@ -23,6 +23,8 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
 
 ## Usage
 
+Save the code below to a file named `server.js` and run it with a command like `deno --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
+
 ```js
 import pogo from 'https://deno.land/x/pogo/main.js';
 
@@ -34,6 +36,8 @@ server.router.get('/', () => {
 
 server.start();
 ```
+
+The examples that follow will build on this to add more capabilities to the server. Some advanced features may require additional permission flags or different file extensions. If you get stuck or need more concrete examples, be sure to check out the [example projects](./example).
 
 ### Adding routes
 
@@ -88,16 +92,23 @@ server.router.get('/', async (request, h) => {
 
 > [JSX](https://reactjs.org/docs/introducing-jsx.html) is a shorthand syntax for JavaScript that looks like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and is useful for constructing web pages
 
-You can do webpage templating with [React](https://reactjs.org/) inside of route handlers, using either JSX or `React.createElement()`.
+You can do webpage templating with [React](https://reactjs.org/) inside of route handlers, using either JSX or [`React.createElement()`](https://reactjs.org/docs/react-api.html#createelement).
 
 Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
+Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`.
+
 ```jsx
 import React from 'https://dev.jspm.io/react';
-// ...
+import pogo from 'https://deno.land/x/pogo/main.js';
+
+const server = pogo.server({ port : 3000 });
+
 server.router.get('/', () => {
-    return <p>Hello, world!</p>;
+    return <h1>Hello, world!</h1>;
 });
+
+server.start();
 ```
 
 ### Writing tests
