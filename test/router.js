@@ -111,11 +111,11 @@ test('new Router() array of routes', () => {
             path   : '/hello',
             xyz    : 123
         },
-        {
+        [{
             method : 'GET',
             path   : '/bye',
             xyz    : 123
-        }
+        }]
     ]);
 
     assertEquals(router.routes, {
@@ -291,11 +291,11 @@ test('router.add() array of routes', () => {
             path   : '/hello',
             xyz    : 123
         },
-        {
+        [{
             method : 'GET',
             path   : '/bye',
             xyz    : 123
-        }
+        }]
     ]);
 
     assertEquals(router.routes, {
