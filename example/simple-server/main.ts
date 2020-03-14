@@ -1,4 +1,4 @@
-import { pogo } from './dependencies.js';
+import { pogo } from './dependencies.ts';
 
 const server = pogo.server({ port : 3000 });
 

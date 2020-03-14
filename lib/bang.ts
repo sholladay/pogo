@@ -1,5 +1,5 @@
-import { status, statusText } from '../dependencies.js';
-import Response from './response.js';
+import { status, statusText } from '../dependencies.ts';
+import Response from './response.ts';
 
 export class Bang extends Error {
     constructor(message, option = {}) {

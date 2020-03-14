@@ -1,5 +1,5 @@
-import { cookie, status } from '../dependencies.js';
-import { Bang } from './bang.js';
+import { cookie, status } from '../dependencies.ts';
+import { Bang } from './bang.ts';
 
 export default class Response {
     constructor(option = {}) {

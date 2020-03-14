@@ -1,5 +1,5 @@
-import { assertStrictEq } from './dev-dependencies.js';
-import server from './main.js';
+import { assertStrictEq } from './dev-dependencies.ts';
+import server from './main.ts';
 
 const { runTests, test } = Deno;
 

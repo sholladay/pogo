@@ -1,4 +1,4 @@
-import Response from './response.js';
+import Response from './response.ts';
 
 export default class Toolkit {
     response(body) {

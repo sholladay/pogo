@@ -1,7 +1,7 @@
-import { assertStrictEq } from '../dev-dependencies.js';
-import Response from '../lib/response.js';
-import Server from '../lib/server.js';
-import pogo from '../main.js';
+import { assertStrictEq } from '../dev-dependencies.ts';
+import Response from '../lib/response.ts';
+import Server from '../lib/server.ts';
+import pogo from '../main.ts';
 
 const { test } = Deno;
 

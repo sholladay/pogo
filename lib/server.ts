@@ -1,9 +1,9 @@
-import { http } from '../dependencies.js';
-import * as bang from './bang.js';
-import respond from './respond.js';
-import Request from './request.js';
-import Toolkit from './toolkit.js';
-import Router from './router.js';
+import { http } from '../dependencies.ts';
+import * as bang from './bang.ts';
+import respond from './respond.ts';
+import Request from './request.ts';
+import Toolkit from './toolkit.ts';
+import Router from './router.ts';
 
 const getPathname = (path) => {
     return new URL(path, 'about:blank').pathname;

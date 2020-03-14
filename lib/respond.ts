@@ -3,8 +3,8 @@ import {
     ReactDOMServer,
     status,
     statusText
-} from '../dependencies.js';
-import Response from './response.js';
+} from '../dependencies.ts';
+import Response from './response.ts';
 
 const respond = (source) => {
     const response = Response.wrap(source);

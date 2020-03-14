@@ -1,5 +1,5 @@
-import { cookie } from '../dependencies.js';
-import Response from './response.js';
+import { cookie } from '../dependencies.ts';
+import Response from './response.ts';
 
 export default class Request {
     constructor(option) {

@@ -1,5 +1,5 @@
-import Router from './lib/router.js';
-import Server from './lib/server.js';
+import Router from './lib/router.ts';
+import Server from './lib/server.ts';
 
 export default {
     server(...args) {
