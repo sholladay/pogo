@@ -4,16 +4,17 @@ import respond from './respond.ts';
 import Request from './request.ts';
 import Toolkit from './toolkit.ts';
 import Router from './router.ts';
+import { ServerOptions } from './types.ts';
 
 const getPathname = (path) => {
     return new URL(path, 'about:blank').pathname;
 };
 
 export default class Server {
-    constructor(option) {
+    constructor(options: ServerOptions) {
         this._config = {
             hostname : 'localhost',
-            ...option
+            ...options
         };
         this.router = new Router();
     }

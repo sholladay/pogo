@@ -1,11 +1,12 @@
 import Router from './lib/router.ts';
 import Server from './lib/server.ts';
+import { Route, RouteHandler, RoutesList, ServerOptions } from './lib/types.ts';
 
 export default {
-    server(...args) {
-        return new Server(...args);
+    server(options: ServerOptions): Server {
+        return new Server(options);
     },
-    router(...args) {
-        return new Router(...args);
+    router(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler): Router {
+        return new Router(route, options, handler);
     }
 };
