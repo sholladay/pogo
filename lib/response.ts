@@ -84,19 +84,12 @@ export default class Response {
     state(name: cookie.Cookie): this;
     state(name: string, value: string | CookieOptions): this;
     state(name: string | cookie.Cookie, value?: string | CookieOptions) {
-        if (typeof name === 'object') {
-            value = name;
-            name = name.name;
-        }
-        if (typeof value === 'string') {
-            value = { value };
-        }
-        cookie.setCookie(this, {
+        cookie.setCookie(this as object, {
             httpOnly : true,
             sameSite : 'Strict',
             secure   : true,
-            ...value,
-            name
+            ...(typeof name === 'object' ? name : { name }),
+            ...(typeof value === 'object' ? value : { value: value ?? '' })
         });
         return this;
     }
@@ -104,7 +97,7 @@ export default class Response {
         return this.header('Content-Type', mediaType);
     }
     unstate(name: string) {
-        cookie.delCookie(this, name);
+        cookie.delCookie(this as object, name);
         return this;
     }
 }

@@ -1,14 +1,20 @@
-import { Route, RouteHandler, RoutesList } from './types.ts';
+import {
+    NormalizedRoute,
+    RequestParams,
+    RouteHandler,
+    RouteOptions,
+    RoutesList
+} from './types.ts';
 
-const isDynamicSegment = (segment) => {
+const isDynamicSegment = (segment: string): boolean => {
     return segment.startsWith('{') && segment.endsWith('}');
 };
 
-const getParamName = (segment) => {
+const getParamName = (segment: string): string => {
     return segment.slice(1, -1);
 };
 
-const sortRoutes = (left, right) => {
+const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
     const leftFirst = -1;
     const rightFirst = 1;
     const keepAsIs = 0;
@@ -39,18 +45,23 @@ const sortRoutes = (left, right) => {
     return keepAsIs;
 };
 
+interface RoutingTable {
+    [method: string]: { static: Map<string, NormalizedRoute>, dynamic: Array<NormalizedRoute> }
+}
+
 class Router {
-    constructor(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler) {
+    routes: RoutingTable;
+    constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         this.routes = {};
         if (route || options) {
             this.add(route, options, handler);
         }
     }
-    add(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler) {
+    add(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         if (typeof handler !== 'function') {
             handler = typeof options === 'function' ? options : (options && options.handler);
         }
-        if (route[Symbol.iterator] && typeof route !== 'string') {
+        if (route && typeof route[Symbol.iterator] === 'function' && typeof route !== 'string') {
             for (const settings of route) {
                 this.add(settings, options, handler);
             }
@@ -103,7 +114,7 @@ class Router {
             }));
         }
     }
-    all(route, options, handler) {
+    all(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : '*'
@@ -111,7 +122,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    delete(route, options, handler) {
+    delete(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'DELETE'
@@ -119,7 +130,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    get(route, options, handler) {
+    get(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'GET'
@@ -127,7 +138,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    patch(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler) {
+    patch(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'PATCH'
@@ -135,7 +146,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    post(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler) {
+    post(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'POST'
@@ -143,7 +154,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    put(route?: RoutesList, options?: Route | RouteHandler, handler?: RouteHandler) {
+    put(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'PUT'
@@ -167,18 +178,19 @@ class Router {
             };
         }
         const segments = path.split('/').filter(Boolean);
-        const methodDynamic = (methodTable || {}).dynamic || [];
-        const wildDynamic = (wildTable || {}).dynamic || [];
+        const methodDynamic = methodTable?.dynamic ?? [];
+        const wildDynamic = wildTable?.dynamic ?? [];
         const dynamicRoutes = [...methodDynamic, ...wildDynamic].sort(sortRoutes);
-        const route = dynamicRoutes.find((route) => {
-            const matchesRequest = (routeSegment, index) => {
+        const route = dynamicRoutes.find((route: NormalizedRoute) => {
+            const matchesRequest = (routeSegment: string, index: number): boolean => {
                 return routeSegment === segments[index] || isDynamicSegment(routeSegment);
             };
             return segments.length === route.segments.length && route.segments.every(matchesRequest);
         });
+
         return route && {
             ...route,
-            params : route.segments.reduce((params, routeSegment, index) => {
+            params : route.segments.reduce((params: RequestParams, routeSegment: string, index: number) => {
                 if (isDynamicSegment(routeSegment)) {
                     const name = getParamName(routeSegment);
                     params[name] = segments[index];

@@ -4,10 +4,22 @@ import Router from './router.ts';
 import Toolkit from './toolkit.ts';
 
 export interface Route {
-    method?: string,
-    path?: string,
-    handler?: RouteHandler
-};
+    method: string,
+    path: string,
+    handler: RouteHandler
+}
+
+export type RequestParams = { [param: string]: string };
+
+export type RouteOptions = Partial<Route>;
+
+export interface NormalizedRoute extends Route {
+    segments: Array<string>
+}
+
+export interface RouteWithParams extends NormalizedRoute {
+    params: RequestParams
+}
 
 export interface ServerOptions {
     hostname?: string,
@@ -17,4 +29,4 @@ export interface ServerOptions {
 type JSONStringifyable = boolean | null | number | object | string;
 export type RouteHandlerResult = Response | Deno.Reader | Uint8Array | JSONStringifyable | Error | Promise<RouteHandlerResult>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
-export type RoutesList = Route | Router | string | Array<RoutesList>;
+export type RoutesList = RouteOptions | Router | string | Array<RoutesList>;

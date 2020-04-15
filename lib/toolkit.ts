@@ -1,10 +1,13 @@
 import Response from './response.ts';
 
+type JSONStringifyable = boolean | null | number | object | string;
+type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
+
 export default class Toolkit {
-    response(body) {
+    response(body?: ResponseBody): Response {
         return new Response({ body });
     }
-    redirect(...args) {
-        return this.response().redirect(...args);
+    redirect(url: string): Response {
+        return this.response().redirect(url);
     }
 }

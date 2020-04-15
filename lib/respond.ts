@@ -5,8 +5,9 @@ import {
     statusText
 } from '../dependencies.ts';
 import Response from './response.ts';
+import { RouteHandlerResult } from './types.ts';
 
-const respond = (source) => {
+const respond = (source: RouteHandlerResult) => {
     const response = Response.wrap(source);
 
     if (React.isValidElement(response.body)) {
