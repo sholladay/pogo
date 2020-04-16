@@ -211,6 +211,20 @@ Example: `3000`
 
 Specifies which port number the server will listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on an available port assigned by the operating system.
 
+##### catchAll
+
+Type: `function`<br>
+Example:
+
+    async (request, h) => {
+        const response = h.response("the void");
+        response.status = 404;
+        return response;
+    }
+
+This is a custom handler (taking precedence over the default one) for requests that do not match any of the defined routes.
+
+
 ### pogo.router(option)
 
 Returns a [`Router`](#router) instance, which can then be used to add routes.

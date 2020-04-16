@@ -433,3 +433,46 @@ test('server.route() handler throws bang.badRequest()', async () => {
         status  : 400
     }));
 });
+
+
+test('server.route() catchAll handler', async () => {
+    const server = pogo.server({
+        catchAll: async (request, h) => {
+            const response = h.response(`My custom response, ${ request.method }`);
+            response.status = 404;
+            return response;
+        }
+    });
+    server.route({
+        method : 'GET',
+        path   : '/hello',
+        handler(request) {
+            return 'Hi, ' + request.method;
+        }
+    });
+    const getResponseExists = await server.inject({
+        method : 'GET',
+        url    : '/hello'
+    });
+    const getResponseNotExists = await server.inject({
+        method : 'GET',
+        url    : '/void'
+    });
+    const postResponseNotExists = await server.inject({
+        method : 'POST',
+        url    : '/void'
+    });
+
+
+    assertStrictEq(getResponseExists.status, 200);
+    assertStrictEq(getResponseExists.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(getResponseExists.body, 'Hi, GET');
+
+    assertStrictEq(getResponseNotExists.status, 404);
+    assertStrictEq(getResponseNotExists.body, 'My custom response, GET');
+
+    assertStrictEq(postResponseNotExists.status, 404);
+    assertStrictEq(postResponseNotExists.body, 'My custom response, POST');
+
+
+});
