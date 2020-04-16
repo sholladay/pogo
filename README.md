@@ -217,9 +217,8 @@ Type: `function`<br>
 Example:
 
     async (request, h) => {
-        const response = h.response("the void");
-        response.status = 404;
-        return response;
+        return h.response("the void")
+            .code(404);
     }
 
 This is a custom handler (taking precedence over the default one) for requests that do not match any of the defined routes.

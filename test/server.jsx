@@ -438,9 +438,8 @@ test('server.route() handler throws bang.badRequest()', async () => {
 test('server.route() catchAll handler', async () => {
     const server = pogo.server({
         catchAll: async (request, h) => {
-            const response = h.response(`My custom response, ${ request.method }`);
-            response.status = 404;
-            return response;
+            return h.response(`My custom response, ${ request.method }`)
+                .code(404);
         }
     });
     server.route({
