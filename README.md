@@ -361,9 +361,22 @@ const bodyText = decoder.decode(buffer.subarray(0, numBytesRead));
 
 To get the body as a string, pass it to `Deno.readAll()` and decode the result, as shown below. Note that doing so will cause the entire body to be read into memory all at once, which is convenient, but may be inappropriate for requests with a very large body.
 
+NOTE: this is currently broken with the latest deno version, please use the code block below this one
 ```js
 const decoder = new TextDecoder();
 const bodyText = decoder.decode(await Deno.readAll(request.body));
+```
+
+```js
+import pogo from 'https://deno.land/x/pogo/main.js';
+import { bodyReader } from "https://deno.land/std/http/io.ts";
+
+server.router.put('/test', async (request:pogo.Request) => {
+    const reader = bodyReader(request.raw.contentLength, request.raw.r);
+    const bufferContent = await Deno.readAll(reader);
+    const decoder = new TextDecoder();
+    const bodyText = decoder.decode(bufferContent);
+});
 ```
 
 #### request.headers
