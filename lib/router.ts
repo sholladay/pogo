@@ -17,7 +17,7 @@ const getParamName = (segment: string): string => {
 const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
     const leftFirst = -1;
     const rightFirst = 1;
-    const keepAsIs = 0;
+    const unchanged = 0;
 
     if (left.segments.filter(isDynamicSegment).length <
         right.segments.filter(isDynamicSegment).length) {
@@ -42,24 +42,27 @@ const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
         return rightFirst;
     }
 
-    return keepAsIs;
+    return unchanged;
 };
 
 interface RoutingTable {
-    [method: string]: { static: Map<string, NormalizedRoute>, dynamic: Array<NormalizedRoute> }
+    [method: string]: {
+        static: Map<string, NormalizedRoute>,
+        dynamic: Array<NormalizedRoute>
+    }
 }
 
 class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         this.routes = {};
-        if (route || options) {
+        if (route) {
             this.add(route, options, handler);
         }
     }
-    add(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
+    add(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         if (typeof handler !== 'function') {
-            handler = typeof options === 'function' ? options : (options && options.handler);
+            handler = typeof options === 'function' ? options : options?.handler;
         }
         if (route && typeof route[Symbol.iterator] === 'function' && typeof route !== 'string') {
             for (const settings of route) {
@@ -114,7 +117,7 @@ class Router {
             }));
         }
     }
-    all(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    all(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : '*'
@@ -122,7 +125,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    delete(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    delete(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'DELETE'
@@ -130,7 +133,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    get(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    get(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'GET'
@@ -138,7 +141,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    patch(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    patch(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'PATCH'
@@ -146,7 +149,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    post(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    post(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'POST'
@@ -154,7 +157,7 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    put(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+    put(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
             method : 'PUT'

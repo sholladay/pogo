@@ -1,8 +1,6 @@
 import { cookie, status } from '../dependencies.ts';
 import { Bang } from './bang.ts';
-
-type JSONStringifyable = boolean | null | number | object | string;
-type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
+import { ResponseBody } from './types.ts';
 
 interface ResponseOptions {
     body?: ResponseBody,
@@ -11,7 +9,7 @@ interface ResponseOptions {
 };
 
 interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
-    name?: string
+    name?: cookie.Cookie['name']
 }
 
 export default class Response {
@@ -26,7 +24,7 @@ export default class Response {
         this.headers = new Headers(options?.headers);
         this.status = options?.status ?? status.OK;
     }
-    static wrap(input: Response | ResponseBody | Error | undefined) {
+    static wrap(input: Response | ResponseBody | Error) {
         if (input instanceof Response) {
             return input;
         }

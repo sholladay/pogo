@@ -5,9 +5,9 @@ import {
     statusText
 } from '../dependencies.ts';
 import Response from './response.ts';
-import { RouteHandlerResult } from './types.ts';
+import { ResponseBody } from './types.ts';
 
-const respond = (source: RouteHandlerResult) => {
+const serialize = (source: Response | ResponseBody | Error): Response => {
     const response = Response.wrap(source);
 
     if (React.isValidElement(response.body)) {
@@ -43,4 +43,4 @@ const respond = (source: RouteHandlerResult) => {
     return response;
 };
 
-export default respond;
+export default serialize;

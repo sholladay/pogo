@@ -1,7 +1,8 @@
 import { http } from '../dependencies.ts';
 import * as bang from './bang.ts';
-import respond from './respond.ts';
+import serialize from './serialize.ts';
 import Request from './request.ts';
+import Response from './response.ts';
 import Toolkit from './toolkit.ts';
 import Router from './router.ts';
 import { RouteHandler, RouteOptions, RoutesList, ServerOptions } from './types.ts';
@@ -21,11 +22,11 @@ export default class Server {
         };
         this.router = new Router();
     }
-    async inject(rawRequest: http.ServerRequest) {
+    async inject(rawRequest: http.ServerRequest): Promise<Response> {
         const route = this.router.lookup(rawRequest.method, getPathname(rawRequest.url));
 
         if (!route) {
-            return respond(bang.notFound());
+            return serialize(bang.notFound());
         }
 
         const request = new Request({
@@ -35,17 +36,21 @@ export default class Server {
         });
 
         try {
-            return respond(await route.handler(request, new Toolkit()));
+            return serialize(await route.handler(request, new Toolkit()));
         }
         catch (error) {
-            return respond(bang.Bang.wrap(error));
+            return serialize(bang.Bang.wrap(error));
         }
     }
     async respond(request: http.ServerRequest) {
         const response = await this.inject(request);
-        request.respond(response);
+        request.respond({
+            body    : response.body ?? undefined,
+            headers : response.headers,
+            status  : response.status
+        } as http.Response);
     }
-    route(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
+    route(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         this.router.add(route, options, handler);
         return this;
     }

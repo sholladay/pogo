@@ -27,6 +27,7 @@ export interface ServerOptions {
 }
 
 type JSONStringifyable = boolean | null | number | object | string;
-export type RouteHandlerResult = Response | Deno.Reader | Uint8Array | JSONStringifyable | Error | Promise<RouteHandlerResult>;
+export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
+export type RouteHandlerResult = Response | ResponseBody | Error | Promise<RouteHandlerResult>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
-export type RoutesList = RouteOptions | Router | string | Array<RoutesList>;
+export type RoutesList = RouteOptions | Router | string | Iterable<RoutesList>;
