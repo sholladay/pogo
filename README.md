@@ -514,7 +514,7 @@ Returns the response so other methods can be chained.
 ```js
 import pogo from 'https://deno.land/x/pogo/main.js';
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
-const handler = (request:pogo.Request, h:pogo.Toolkit) => {
+const handler = (request: pogo.Request, h: pogo.Toolkit) => {
     return h.response().code(status.Teapot);
 };
 ```
