@@ -511,10 +511,11 @@ Returns the response so other methods can be chained.
 
 *Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
-```js
+```ts
+import pogo from 'https://deno.land/x/pogo/main.js';
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
-const handler = (request) => {
-    return request.response.code(status.Teapot);
+const handler = (request: pogo.Request, h: pogo.Toolkit) => {
+    return h.response().code(status.Teapot);
 };
 ```
 
