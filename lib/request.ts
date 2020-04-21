@@ -1,17 +1,17 @@
 import { cookie, http } from '../dependencies.ts';
 import Response from './response.ts';
 import Server from './server.ts';
-import { RequestParams, RouteWithParams } from './types.ts';
+import { RequestParams, MatchedRoute } from './types.ts';
 
 interface RequestOptions {
     raw: http.ServerRequest,
-    route: RouteWithParams,
+    route: MatchedRoute,
     server: Server
 }
 
 export default class Request {
     raw: http.ServerRequest;
-    route: RouteWithParams;
+    route: MatchedRoute;
     method: string;
     headers: Headers;
     params: RequestParams

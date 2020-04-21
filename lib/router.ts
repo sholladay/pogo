@@ -1,10 +1,27 @@
 import {
     NormalizedRoute,
     RequestParams,
+    Route,
     RouteHandler,
     RouteOptions,
-    RoutesList
+    MatchedRoute
 } from './types.ts';
+
+export type RouteOptionsHasHandler = RouteOptions & Pick<Route, 'handler'>;
+export type RouteOptionsHasMethod = RouteOptions & Pick<Route, 'method'>;
+export type RouteOptionsHasPath = RouteOptions & Pick<Route, 'path'>;
+export type RouteOptionsHasHandlerAndMethod = RouteOptions & Pick<Route, 'handler' | 'method'>;
+export type RouteOptionsHasHandlerAndPath = RouteOptions & Pick<Route, 'handler' | 'path'>;
+export type RouteOptionsHasMethodAndPath = RouteOptions & Pick<Route, 'method' | 'path'>;
+
+export type RouteOptionsList = RouteOptions | Router | Iterable<RouteOptionsList>;
+export type RoutesList = Route | Router | Iterable<RoutesList>;
+export type RoutesListHasHandler = RouteOptionsHasHandler | Router | Iterable<RoutesListHasHandler>;
+export type RoutesListHasMethod = RouteOptionsHasMethod | Router | Iterable<RoutesListHasMethod>;
+export type RoutesListHasPath = RouteOptionsHasPath | Router | string | Iterable<RoutesListHasPath>;
+export type RoutesListHasHandlerAndMethod = RouteOptionsHasHandlerAndMethod | Router | Iterable<RoutesListHasHandlerAndMethod>;
+export type RoutesListHasHandlerAndPath = RouteOptionsHasHandlerAndPath | Router | Iterable<RoutesListHasHandlerAndPath>;
+export type RoutesListHasMethodAndPath = RouteOptionsHasMethodAndPath | Router | Iterable<RoutesListHasMethodAndPath>;
 
 const isDynamicSegment = (segment: string): boolean => {
     return segment.startsWith('{') && segment.endsWith('}');
@@ -60,42 +77,48 @@ class Router {
             this.add(route, options, handler);
         }
     }
-    add(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
-        if (typeof handler !== 'function') {
-            handler = typeof options === 'function' ? options : options?.handler;
-        }
-        if (route && typeof route[Symbol.iterator] === 'function' && typeof route !== 'string') {
-            for (const settings of route) {
+    add(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    add(route: RoutesListHasMethodAndPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    add(route: RoutesListHasHandlerAndMethod, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    add(route: RoutesListHasHandlerAndPath, options: RouteOptionsHasMethod, handler?: RouteHandler): this;
+    add(route: RoutesListHasHandler, options: RouteOptionsHasMethodAndPath, handler?: RouteHandler): this;
+    add(route: RoutesListHasPath, options: RouteOptionsHasHandlerAndMethod, handler?: RouteHandler): this;
+    add(route: RoutesListHasPath, options: RouteOptionsHasMethod, handler: RouteHandler): this;
+    add(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    add(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
+    add(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
+        if (route && typeof route === 'object' && Symbol.iterator in route) {
+            for (const settings of route as Iterable<RoutesList>) {
                 this.add(settings, options, handler);
             }
-            return;
+            return this;
         }
         if (route instanceof Router) {
             for (const table of Object.values(route.routes)) {
                 this.add(table.dynamic);
                 this.add(table.static.values());
             }
-            return;
+            return this;
         }
 
         const normalizedRoute = {
             ...(typeof route === 'string' ? { path : route } : route),
-            ...options,
+            ...(typeof options === 'function' ? { handler : options} : options),
             ...(handler ? { handler } : undefined)
-        };
+        } as NormalizedRoute;
 
-        if (normalizedRoute.method[Symbol.iterator] && typeof normalizedRoute.method !== 'string') {
-            for (const method of normalizedRoute.method) {
+        if (typeof normalizedRoute.method === 'object' && Symbol.iterator in normalizedRoute.method) {
+            for (const method of normalizedRoute.method as Iterable<string>) {
                 this.add({
                     ...normalizedRoute,
                     method
                 });
             }
-            return;
+            return this;
         }
 
         const method = normalizedRoute.method.toLowerCase();
-        this.routes[method] = this.routes[method] || {
+        this.routes[method] = this.routes[method] ?? {
             static  : new Map(),
             dynamic : []
         };
@@ -116,7 +139,14 @@ class Router {
                 return sortRoutes(left[1], right[1]);
             }));
         }
+        return this;
     }
+    all(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    all(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    all(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    all(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    all(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    all(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     all(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -125,6 +155,12 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
+    delete(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    delete(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    delete(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    delete(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    delete(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    delete(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     delete(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -133,6 +169,12 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
+    get(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    get(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    get(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    get(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    get(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    get(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     get(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -141,6 +183,12 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
+    patch(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    patch(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    patch(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    patch(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    patch(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    patch(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     patch(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -149,6 +197,12 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
+    post(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    post(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    post(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    post(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    post(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    post(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     post(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -157,6 +211,12 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
+    put(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    put(route: RoutesListHasHandler, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    put(route: RoutesListHasPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    put(route: RoutesListHasPath, options: RouteOptions, handler: RouteHandler): this;
+    put(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    put(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     put(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         const config = {
             ...(typeof options === 'function' ? { handler : options } : options),
@@ -165,20 +225,23 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    lookup(method: string, path: string) {
+    lookup(method: string, path: string): MatchedRoute | void {
         const methodTable = this.routes[method.toLowerCase()];
         const wildTable = this.routes['*'];
-        if (methodTable && methodTable.static.has(path)) {
+        if (!methodTable && !wildTable) {
+            return;
+        }
+        if (methodTable?.static.has(path)) {
             return {
                 ...methodTable.static.get(path),
                 params : {}
-            };
+            } as MatchedRoute;
         }
-        if (wildTable && wildTable.static.has(path)) {
+        if (wildTable?.static.has(path)) {
             return {
                 ...wildTable.static.get(path),
                 params : {}
-            };
+            } as MatchedRoute;
         }
         const segments = path.split('/').filter(Boolean);
         const methodDynamic = methodTable?.dynamic ?? [];
@@ -200,7 +263,7 @@ class Router {
                 }
                 return params;
             }, {})
-        };
+        } as MatchedRoute;
     }
 }
 

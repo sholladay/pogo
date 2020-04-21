@@ -4,7 +4,7 @@ import { ResponseBody } from './types.ts';
 
 interface ResponseOptions {
     body?: ResponseBody,
-    headers?: __domTypes.HeadersInit,
+    headers?: HeadersInit,
     status?: number
 };
 

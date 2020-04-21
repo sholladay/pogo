@@ -1,6 +1,5 @@
 import Request from './request.ts';
 import Response from './response.ts';
-import Router from './router.ts';
 import Toolkit from './toolkit.ts';
 
 export interface Route {
@@ -17,7 +16,7 @@ export interface NormalizedRoute extends Route {
     segments: Array<string>
 }
 
-export interface RouteWithParams extends NormalizedRoute {
+export interface MatchedRoute extends NormalizedRoute {
     params: RequestParams
 }
 
@@ -28,6 +27,5 @@ export interface ServerOptions {
 
 type JSONStringifyable = boolean | null | number | object | string;
 export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
-export type RouteHandlerResult = Response | ResponseBody | Error | Promise<RouteHandlerResult>;
+export type RouteHandlerResult = Response | ResponseBody | Error | Promise<Response | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
-export type RoutesList = RouteOptions | Router | string | Iterable<RoutesList>;

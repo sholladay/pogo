@@ -4,8 +4,22 @@ import serialize from './serialize.ts';
 import Request from './request.ts';
 import Response from './response.ts';
 import Toolkit from './toolkit.ts';
-import Router from './router.ts';
-import { RouteHandler, RouteOptions, RoutesList, ServerOptions } from './types.ts';
+import Router, {
+    RoutesList,
+    RoutesListHasHandler,
+    RoutesListHasHandlerAndMethod,
+    RoutesListHasHandlerAndPath,
+    RoutesListHasMethod,
+    RoutesListHasMethodAndPath,
+    RoutesListHasPath,
+    RouteOptionsHasHandler,
+    RouteOptionsHasHandlerAndMethod,
+    RouteOptionsHasHandlerAndPath,
+    RouteOptionsHasMethod,
+    RouteOptionsHasMethodAndPath,
+    RouteOptionsHasPath
+} from './router.ts';
+import { RouteHandler, RouteOptions, ServerOptions } from './types.ts';
 
 const getPathname = (path: string): string => {
     return new URL(path, 'about:blank').pathname;
@@ -50,6 +64,15 @@ export default class Server {
             status  : response.status
         } as http.Response);
     }
+    route(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
+    route(route: RoutesListHasMethodAndPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
+    route(route: RoutesListHasHandlerAndMethod, options: RouteOptionsHasPath, handler?: RouteHandler): this;
+    route(route: RoutesListHasHandlerAndPath, options: RouteOptionsHasMethod, handler?: RouteHandler): this;
+    route(route: RoutesListHasHandler, options: RouteOptionsHasMethodAndPath, handler?: RouteHandler): this;
+    route(route: RoutesListHasPath, options: RouteOptionsHasHandlerAndMethod, handler?: RouteHandler): this;
+    route(route: RoutesListHasPath, options: RouteOptionsHasMethod, handler: RouteHandler): this;
+    route(route: RoutesListHasMethod, options: RouteOptionsHasHandlerAndPath, handler?: RouteHandler): this;
+    route(route: RoutesListHasMethod, options: RouteOptionsHasPath, handler: RouteHandler): this;
     route(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this {
         this.router.add(route, options, handler);
         return this;
