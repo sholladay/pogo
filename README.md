@@ -2,7 +2,7 @@
 
 > Server framework for [Deno](https://github.com/denoland/deno)
 
-Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
+Pogo is an easy-to-use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
 *Supports Deno v0.41.0 and higher.*
 
@@ -511,10 +511,9 @@ Returns the response so other methods can be chained.
 
 *Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
-```ts
-import pogo from 'https://deno.land/x/pogo/main.js';
+```js
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
-const handler = (request: pogo.Request, h: pogo.Toolkit) => {
+const handler = (request, h) => {
     return h.response().code(status.Teapot);
 };
 ```
