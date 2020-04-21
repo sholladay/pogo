@@ -96,7 +96,7 @@ You can do webpage templating with [React](https://reactjs.org/) inside of route
 
 Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
-Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`, however you'll need to import the type definitions for JSX.
+Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`, however you'll need to import the type definitions for JSX (see [deno_types](https://github.com/Soremwar/deno_types)).
 
 ```jsx
 import React from 'https://dev.jspm.io/react';
