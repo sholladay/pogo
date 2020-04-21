@@ -29,7 +29,7 @@ export default class Request {
         this.referrer = this.headers.get('referer') || '';
         this.response = new Response();
         this.server = options.server;
-        this.state = cookie.getCookies(this.raw);
+        this.state = cookie.getCookies(this as any);
         this.url = new URL(this.raw.url, 'http://' + this.headers.get('host'));
     }
     get body() {
