@@ -1,7 +1,7 @@
-import { React } from '../dependencies.js';
-import { assertEquals, assertStrictEq } from '../dev-dependencies.js';
-import * as bang from '../lib/bang.js';
-import pogo from '../main.js';
+import { React } from '../dependencies.ts';
+import { assertEquals, assertStrictEq } from '../dev-dependencies.ts';
+import * as bang from '../lib/bang.ts';
+import pogo from '../main.ts';
 
 const { test } = Deno;
 

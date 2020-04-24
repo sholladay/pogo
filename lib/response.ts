@@ -1,13 +1,30 @@
-import { cookie, status } from '../dependencies.js';
-import { Bang } from './bang.js';
+import { cookie, status } from '../dependencies.ts';
+import { Bang } from './bang.ts';
+import { ResponseBody } from './types.ts';
+
+interface ResponseOptions {
+    body?: ResponseBody,
+    headers?: HeadersInit,
+    status?: number
+};
+
+interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
+    name?: cookie.Cookie['name']
+}
 
 export default class Response {
-    constructor(option = {}) {
-        this.headers = new Headers(option.headers);
-        this.status = option.status || status.OK;
-        this.body = option.body;
+    body: ResponseBody;
+    headers: Headers;
+    status: number;
+    permanent?: () => this;
+    temporary?: () => this;
+    rewritable?: (isRewritable: boolean) => this;
+    constructor(options?: ResponseOptions) {
+        this.body = options?.body ?? null;
+        this.headers = new Headers(options?.headers);
+        this.status = options?.status ?? status.OK;
     }
-    static wrap(input) {
+    static wrap(input: Response | ResponseBody | Error) {
         if (input instanceof Response) {
             return input;
         }
@@ -16,25 +33,25 @@ export default class Response {
         }
         return new Response({ body : input });
     }
-    code(statusCode) {
+    code(statusCode: number) {
         this.status = statusCode;
         return this;
     }
-    created(url) {
+    created(url?: string) {
         this.code(status.Created);
         if (url) {
             this.location(url);
         }
         return this;
     }
-    header(name, value) {
+    header(name: string, value: string) {
         this.headers.set(name, value);
         return this;
     }
-    location(url) {
+    location(url: string) {
         return this.header('Location', url);
     }
-    redirect(url) {
+    redirect(url: string) {
         const _isRewritable = () => {
             return [status.MovedPermanently, status.Found].includes(this.status);
         };
@@ -51,7 +68,7 @@ export default class Response {
             this.code(_isRewritable() ? status.Found : status.TemporaryRedirect);
             return this;
         };
-        this.rewritable = (isRewritable) => {
+        this.rewritable = (isRewritable: boolean) => {
             if (isRewritable === false) {
                 this.code(_isTemporary() ? status.TemporaryRedirect : status.PermanentRedirect);
             }
@@ -62,28 +79,23 @@ export default class Response {
         };
         return this;
     }
-    state(name, value) {
-        if (typeof name === 'object') {
-            value = name;
-            name = value.name;
-        }
-        if (typeof value === 'string') {
-            value = { value };
-        }
-        cookie.setCookie(this, {
+    state(name: cookie.Cookie): this;
+    state(name: string, value: string | CookieOptions): this;
+    state(name: string | cookie.Cookie, value?: string | CookieOptions) {
+        cookie.setCookie(this as object, {
             httpOnly : true,
             sameSite : 'Strict',
             secure   : true,
-            ...value,
-            name
+            ...(typeof name === 'object' ? name : { name }),
+            ...(typeof value === 'object' ? value : { value: value ?? '' })
         });
         return this;
     }
-    type(mediaType) {
+    type(mediaType: string) {
         return this.header('Content-Type', mediaType);
     }
-    unstate(name) {
-        cookie.delCookie(this, name);
+    unstate(name: string) {
+        cookie.delCookie(this as object, name);
         return this;
     }
 }

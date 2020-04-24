@@ -1,5 +1,5 @@
-import { assertStrictEq } from '../dev-dependencies.js';
-import pogo from '../main.js';
+import { assertStrictEq } from '../dev-dependencies.ts';
+import pogo from '../main.ts';
 
 const { test } = Deno;
 

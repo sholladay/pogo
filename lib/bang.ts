@@ -1,10 +1,17 @@
-import { status, statusText } from '../dependencies.js';
-import Response from './response.js';
+import { status, statusText } from '../dependencies.ts';
+import Response from './response.ts';
+
+interface BangOptions {
+    message?: string,
+    status?: number
+}
 
 export class Bang extends Error {
-    constructor(message, option = {}) {
-        const code = option.status || status.InternalServerError;
-        super(option.message || ((message instanceof Error) ? message.message : message) || statusText.get(code));
+    response: Response;
+    isDeveloperError?: true;
+    constructor(message?: string | Error, options?: BangOptions) {
+        const code = options?.status ?? status.InternalServerError;
+        super(options?.message || ((message instanceof Error) ? message.message : message) || statusText.get(code));
         this.response = new Response({
             status : code,
             body   : {
@@ -14,168 +21,168 @@ export class Bang extends Error {
             }
         });
     }
-    static wrap(input) {
+    static wrap(input: string | Error) {
         return input instanceof Bang ? input : new Bang(input);
     }
 }
 
-export const badRequest = (message) => {
+export const badRequest = (message?: string | Error) => {
     return new Bang(message, { status : status.BadRequest });
 };
 
-export const unauthorized = (message) => {
+export const unauthorized = (message?: string | Error) => {
     return new Bang(message, { status : status.Unauthorized });
 };
 
-export const paymentRequired = (message) => {
+export const paymentRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.PaymentRequired });
 };
 
-export const forbidden = (message) => {
+export const forbidden = (message?: string | Error) => {
     return new Bang(message, { status : status.Forbidden });
 };
 
-export const notFound = (message) => {
+export const notFound = (message?: string | Error) => {
     return new Bang(message, { status : status.NotFound });
 };
 
-export const methodNotAllowed = (message) => {
+export const methodNotAllowed = (message?: string | Error) => {
     return new Bang(message, { status : status.MethodNotAllowed });
 };
 
-export const notAcceptable = (message) => {
+export const notAcceptable = (message?: string | Error) => {
     return new Bang(message, { status : status.NotAcceptable });
 };
 
-export const proxyAuthRequired = (message) => {
+export const proxyAuthRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.ProxyAuthRequired });
 };
 
-export const clientTimeout = (message) => {
+export const clientTimeout = (message?: string | Error) => {
     return new Bang(message, { status : status.RequestTimeout });
 };
 
-export const conflict = (message) => {
+export const conflict = (message?: string | Error) => {
     return new Bang(message, { status : status.Conflict });
 };
 
-export const gone = (message) => {
+export const gone = (message?: string | Error) => {
     return new Bang(message, { status : status.Gone });
 };
 
-export const lengthRequired = (message) => {
+export const lengthRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.LengthRequired });
 };
 
-export const preconditionFailed = (message) => {
+export const preconditionFailed = (message?: string | Error) => {
     return new Bang(message, { status : status.PreconditionFailed });
 };
 
-export const entityTooLarge = (message) => {
+export const entityTooLarge = (message?: string | Error) => {
     return new Bang(message, { status : status.RequestEntityTooLarge });
 };
 
-export const urlTooLong = (message) => {
+export const urlTooLong = (message?: string | Error) => {
     return new Bang(message, { status : status.RequestURITooLong });
 };
 
-export const unsupportedMediaType = (message) => {
+export const unsupportedMediaType = (message?: string | Error) => {
     return new Bang(message, { status : status.UnsupportedMediaType });
 };
 
-export const rangeNotSatisfiable = (message) => {
+export const rangeNotSatisfiable = (message?: string | Error) => {
     return new Bang(message, { status : status.RequestedRangeNotSatisfiable });
 };
 
-export const expectationFailed = (message) => {
+export const expectationFailed = (message?: string | Error) => {
     return new Bang(message, { status : status.ExpectationFailed });
 };
 
-export const teapot = (message) => {
+export const teapot = (message?: string | Error) => {
     return new Bang(message, { status : status.Teapot });
 };
 
-export const misdirected = (message) => {
+export const misdirected = (message?: string | Error) => {
     return new Bang(message, { status : status.MisdirectedRequest });
 };
 
-export const badData = (message) => {
+export const badData = (message?: string | Error) => {
     return new Bang(message, { status : status.UnprocessableEntity });
 };
 
-export const locked = (message) => {
+export const locked = (message?: string | Error) => {
     return new Bang(message, { status : status.Locked });
 };
 
-export const failedDependency = (message) => {
+export const failedDependency = (message?: string | Error) => {
     return new Bang(message, { status : status.FailedDependency });
 };
 
-export const upgradeRequired = (message) => {
+export const upgradeRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.UpgradeRequired });
 };
 
-export const preconditionRequired = (message) => {
+export const preconditionRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.PreconditionRequired });
 };
 
-export const tooManyRequests = (message) => {
+export const tooManyRequests = (message?: string | Error) => {
     return new Bang(message, { status : status.TooManyRequests });
 };
 
-export const headerFieldsTooLarge = (message) => {
+export const headerFieldsTooLarge = (message?: string | Error) => {
     return new Bang(message, { status : status.RequestHeaderFieldsTooLarge });
 };
 
-export const illegal = (message) => {
+export const illegal = (message?: string | Error) => {
     return new Bang(message, { status : status.UnavailableForLegalReasons });
 };
 
-export const internal = (message) => {
+export const internal = (message?: string | Error) => {
     return new Bang(message, { status : status.InternalServerError });
 };
 
-export const notImplemented = (message) => {
+export const notImplemented = (message?: string | Error) => {
     return new Bang(message, { status : status.NotImplemented });
 };
 
-export const badGateway = (message) => {
+export const badGateway = (message?: string | Error) => {
     return new Bang(message, { status : status.BadGateway });
 };
 
-export const serverUnavailable = (message) => {
+export const serverUnavailable = (message?: string | Error) => {
     return new Bang(message, { status : status.ServiceUnavailable });
 };
 
-export const gatewayTimeout = (message) => {
+export const gatewayTimeout = (message?: string | Error) => {
     return new Bang(message, { status : status.GatewayTimeout });
 };
 
-export const unsupportedHttpVersion = (message) => {
+export const unsupportedHttpVersion = (message?: string | Error) => {
     return new Bang(message, { status : status.HTTPVersionNotSupported });
 };
 
-export const variantAlsoNegotiates = (message) => {
+export const variantAlsoNegotiates = (message?: string | Error) => {
     return new Bang(message, { status : status.VariantAlsoNegotiates });
 };
 
-export const insufficientStorage = (message) => {
+export const insufficientStorage = (message?: string | Error) => {
     return new Bang(message, { status : status.InsufficientStorage });
 };
 
-export const loopDetected = (message) => {
+export const loopDetected = (message?: string | Error) => {
     return new Bang(message, { status : status.LoopDetected });
 };
 
-export const notExtended = (message) => {
+export const notExtended = (message?: string | Error) => {
     return new Bang(message, { status : status.NotExtended });
 };
 
-export const networkAuthenticationRequired = (message) => {
+export const networkAuthenticationRequired = (message?: string | Error) => {
     return new Bang(message, { status : status.NetworkAuthenticationRequired });
 };
 
-export const badImplementation = (message) => {
+export const badImplementation = (message?: string | Error) => {
     const error = new Bang(message, { status : status.InternalServerError });
     error.isDeveloperError = true;
     return error;

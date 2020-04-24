@@ -3,10 +3,11 @@ import {
     ReactDOMServer,
     status,
     statusText
-} from '../dependencies.js';
-import Response from './response.js';
+} from '../dependencies.ts';
+import Response from './response.ts';
+import { ResponseBody } from './types.ts';
 
-const respond = (source) => {
+const serialize = (source: Response | ResponseBody | Error): Response => {
     const response = Response.wrap(source);
 
     if (React.isValidElement(response.body)) {
@@ -17,13 +18,13 @@ const respond = (source) => {
             response.headers.set('content-type', 'text/html; charset=utf-8');
         }
     }
-    else if (response.body === null || (source instanceof Response && response.body === undefined)) {
+    else if (response.body === null && source !== undefined) {
         response.body = '';
     }
     else if (response.body instanceof Deno.File || response.body instanceof Deno.Buffer || response.body instanceof Uint8Array) {
         return response;
     }
-    else if (['object', 'number', 'boolean'].includes(typeof response.body)) {
+    else if (['object', 'number', 'boolean'].includes(typeof response.body) && source !== undefined) {
         if (!response.headers.has('content-type')) {
             response.headers.set('content-type', 'application/json; charset=utf-8');
         }
@@ -42,4 +43,4 @@ const respond = (source) => {
     return response;
 };
 
-export default respond;
+export default serialize;

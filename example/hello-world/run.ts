@@ -1,4 +1,4 @@
-import pogo from 'https://deno.land/x/pogo/main.js';
+import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
 

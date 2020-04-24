@@ -2,9 +2,9 @@
 
 > Server framework for [Deno](https://github.com/denoland/deno)
 
-Pogo is an easy to use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
+Pogo is an easy-to-use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.30.0 and higher.*
+*Supports Deno v0.41.0 and higher.*
 
 ## Contents
 
@@ -26,7 +26,7 @@ Pogo is an easy to use, safe, and expressive framework for writing web servers a
 Save the code below to a file named `server.js` and run it with a command like `deno --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
 
 ```js
-import pogo from 'https://deno.land/x/pogo/main.js';
+import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
 
@@ -96,11 +96,11 @@ You can do webpage templating with [React](https://reactjs.org/) inside of route
 
 Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
-Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`.
+Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`, however you'll need to import the type definitions for JSX (see [deno_types](https://github.com/Soremwar/deno_types)).
 
 ```jsx
 import React from 'https://dev.jspm.io/react';
-import pogo from 'https://deno.land/x/pogo/main.js';
+import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
 
@@ -511,10 +511,9 @@ Returns the response so other methods can be chained.
 
 *Tip: Use Deno's [`status`](https://deno.land/std/http/http_status.ts) constants to define the status code.*
 
-```ts
-import pogo from 'https://deno.land/x/pogo/main.js';
+```js
 import { Status as status } from 'https://deno.land/std/http/http_status.ts';
-const handler = (request: pogo.Request, h: pogo.Toolkit) => {
+const handler = (request, h) => {
     return h.response().code(status.Teapot);
 };
 ```

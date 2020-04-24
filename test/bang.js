@@ -2,9 +2,9 @@ import {
     assert,
     assertEquals,
     assertStrictEq
-} from '../dev-dependencies.js';
-import Response from '../lib/response.js';
-import * as bang from '../lib/bang.js';
+} from '../dev-dependencies.ts';
+import Response from '../lib/response.ts';
+import * as bang from '../lib/bang.ts';
 
 const { test } = Deno;
 
