@@ -4,7 +4,7 @@
 
 Pogo is an easy-to-use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.41.0 and higher.*
+*Supports Deno v0.42.0 and higher.*
 
 ## Contents
 
@@ -350,7 +350,7 @@ Type: [`Reader`](https://deno.land/typedoc/interfaces/deno.reader.html)
 
 The HTTP [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) value.
 
-You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `Deno.EOF` when the body is finished being read.
+You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for the number of bytes read when the body is finished being read.
 
 ```js
 const decoder = new TextDecoder();
