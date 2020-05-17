@@ -5,7 +5,8 @@ import Toolkit from './toolkit.ts';
 export interface Route {
     method: string,
     path: string,
-    handler: RouteHandler
+    handler: RouteHandler,
+    vhost?: string
 }
 
 export type RequestParams = { [param: string]: string };
