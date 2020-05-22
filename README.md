@@ -62,7 +62,7 @@ server
 server.route([
     { method : 'GET', path : '/hi', handler : () => 'Hello!' },
     { method : 'GET', path : '/bye', handler : () => 'Goodbye!' }
-});
+]);
 ```
 
 You can also configure the route to handle multiple methods by using an array, or `'*'` to handle all possible methods.
