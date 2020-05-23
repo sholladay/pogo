@@ -4,7 +4,7 @@
 
 Pogo is an easy-to-use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
-*Supports Deno v0.41.0 and higher.*
+*Supports Deno v1.0.0 and higher.*
 
 ## Contents
 
@@ -340,7 +340,7 @@ console.log('Stopped listening for requests');
 
 ### Request
 
-The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is similar to an instance of Deno's [`ServerRequest`](https://github.com/denoland/deno_std/blob/a4a8bb2948e5984656724c51a803293ce82c035f/http/server.ts#L100-L202) class, with some additions.
+The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is similar to an instance of Deno's [`ServerRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#ServerRequest) class, with some additions.
 
 It provides properties and methods for inspecting the content of the request.
 
@@ -428,7 +428,7 @@ The path part of the request URL, excluding the query. Shortcut for `request.url
 
 #### request.raw
 
-Type: [`ServerRequest`](https://github.com/denoland/deno_std/blob/5d0dd5878e82ab7577356096469a7e280efe8442/http/server.ts#L100-L202)
+Type: [`ServerRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#ServerRequest)
 
 The original request object from Deno's `http` module, upon which many of the other request properties are based.
 
@@ -572,7 +572,7 @@ Returns the response so other methods can be chained.
 
 #### response.state(name, value)
 
-Sets the [`Set-Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie) header to create a cookie with the given `name` and `value`. Cookie options can be specified by using an object for `value`. See Deno's [cookie](https://github.com/denoland/deno/blob/a61966a243cd5d09031fabd9a572a75aab8d2da8/std/http/cookie.ts#L12-L23) interface for the available options.
+Sets the [`Set-Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie) header to create a cookie with the given `name` and `value`. Cookie options can be specified by using an object for `value`. See Deno's [cookie](https://doc.deno.land/https/deno.land/std/http/cookie.ts#Cookie) interface for the available options.
 
 Returns the response so other methods can be chained.
 

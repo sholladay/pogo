@@ -2,7 +2,7 @@ import {
     assert,
     assertEquals,
     assertStrictEq
-} from 'https://deno.land/std@v0.41.0/testing/asserts.ts';
+} from 'https://deno.land/std@v0.53.0/testing/asserts.ts';
 
 export {
     assert,
