@@ -7,15 +7,14 @@ import {
     MatchedRoute
 } from './types.ts';
 
-export type RouteOptionsHasHandler = RouteOptions & Pick<Route, 'handler'>;
-export type RouteOptionsHasMethod = RouteOptions & Pick<Route, 'method'>;
-export type RouteOptionsHasPath = RouteOptions & Pick<Route, 'path'>;
-export type RouteOptionsHasHandlerAndMethod = RouteOptions & Pick<Route, 'handler' | 'method'>;
-export type RouteOptionsHasHandlerAndPath = RouteOptions & Pick<Route, 'handler' | 'path'>;
-export type RouteOptionsHasMethodAndPath = RouteOptions & Pick<Route, 'method' | 'path'>;
+export type RouteOptionsHasHandler = RouteOptions & Pick<Required<RouteOptions>, 'handler'>;
+export type RouteOptionsHasMethod = RouteOptions & Pick<Required<RouteOptions>, 'method'>;
+export type RouteOptionsHasPath = RouteOptions & Pick<Required<RouteOptions>, 'path'>;
+export type RouteOptionsHasHandlerAndMethod = RouteOptions & Pick<Required<RouteOptions>, 'handler' | 'method'>;
+export type RouteOptionsHasHandlerAndPath = RouteOptions & Pick<Required<RouteOptions>, 'handler' | 'path'>;
+export type RouteOptionsHasMethodAndPath = RouteOptions & Pick<Required<RouteOptions>, 'method' | 'path'>;
 
-export type RouteOptionsList = RouteOptions | Router | Iterable<RouteOptionsList>;
-export type RoutesList = Route | Router | Iterable<RoutesList>;
+export type RoutesList = RouteOptions | Router | Iterable<RoutesList>;
 export type RoutesListHasHandler = RouteOptionsHasHandler | Router | Iterable<RoutesListHasHandler>;
 export type RoutesListHasMethod = RouteOptionsHasMethod | Router | Iterable<RoutesListHasMethod>;
 export type RoutesListHasPath = RouteOptionsHasPath | Router | string | Iterable<RoutesListHasPath>;
@@ -23,11 +22,8 @@ export type RoutesListHasHandlerAndMethod = RouteOptionsHasHandlerAndMethod | Ro
 export type RoutesListHasHandlerAndPath = RouteOptionsHasHandlerAndPath | Router | Iterable<RoutesListHasHandlerAndPath>;
 export type RoutesListHasMethodAndPath = RouteOptionsHasMethodAndPath | Router | Iterable<RoutesListHasMethodAndPath>;
 
-// const getParamNames = (path: string) => {
-//     return path.match(/(?<={)\w+(?=.*?})/g);
-// };
-
-const paramsPattern = /{(\w+)(?:\?|\*(?:[1-9]\d*)?)?}/g;
+const paramPattern = /{(\w+)(?:\?|\*(?:[1-9]\d*)?)?}/u;
+const paramsPattern = new RegExp(paramPattern, paramPattern.flags + 'g');
 
 const expandPath = (path: string): Array<string> => {
     return Array.from(path.matchAll(paramsPattern)).flatMap((match) => {
@@ -56,14 +52,15 @@ const isDynamicSegment = (segment: string): boolean => {
 };
 
 const getParamName = (segment: string): string => {
-    return segment.slice(1, -1);
+    const param = segment.match(paramPattern);
+    return param ? param[1] : '';
 };
 
-const toPathfinder = (path: string): string => {
+const toPathfinder = (segments: Array<string>): string => {
     const replacePart = (str: string) => {
         return str && '.';
     };
-    return path.split('/').map(replacePart).join('/');
+    return segments.map(replacePart).join('/');
 };
 
 const toSignature = (route: NormalizedRoute): string => {
@@ -208,10 +205,11 @@ class Router {
 
         this.routes.conflictIds.set(conflictId, record);
 
-        const pathfinder = toPathfinder(record.path);
-        this.routes.pathfinders.set(pathfinder, this.routes.pathfinders.get(pathfinder) ?? []);
-        this.routes.pathfinders.get(pathfinder).push(record);
-        this.routes.pathfinders.get(pathfinder).sort(sortRoutes);
+        const pathfinder = toPathfinder(record.segments);
+        const pathfinderRoutes = this.routes.pathfinders.get(pathfinder) ?? [];
+        pathfinderRoutes.push(record);
+        pathfinderRoutes.sort(sortRoutes);
+        this.routes.pathfinders.set(pathfinder, pathfinderRoutes);
 
         this.routes.list.push(record);
         this.routes.list.sort(sortRoutes);
@@ -303,12 +301,11 @@ class Router {
         return this;
     }
     lookup(method: string, path: string, host?: string): MatchedRoute | void {
-        const pathfinder = toPathfinder(path);
-        const candidates = this.routes.pathfinders.get(pathfinder) ?? [];
         const pathSegments = path.split('/');
+        const pathfinder = toPathfinder(pathSegments);
 
-        const matchRoute = (list: Array<NormalizedRoute>): NormalizedRoute => {
-            return list?.find((route: NormalizedRoute) => {
+        const matchRoute = (list: Array<NormalizedRoute> = []): NormalizedRoute => {
+            return list.find((route: NormalizedRoute) => {
                 const isMethodMatch = route.method === method || route.method === '*';
                 if (!isMethodMatch) {
                     return false;
@@ -320,18 +317,18 @@ class Router {
                 if (isStaticPath(route.path)) {
                     return route.path === path;
                 }
-                const routeSegments = route.fingerprint.split('/');
-                const matchesAllSegments = routeSegments.every((routeSegment: string, index: number): boolean => {
-                    const pathSegment = pathSegments[index];
-                    return !isStaticPath(pathSegment) || (routeSegment === pathSegment);
+
+                const matchesAllSegments = route.segments.every((routeSegment: string, index: number): boolean => {
+                    return isDynamicSegment(routeSegment) || (routeSegment === pathSegments[index]);
                 });
 
-                const isPathMatch = matchesAllSegments && ((routeSegments.length === pathSegments.length) || routeSegments[routeSegments.length - 1].endsWith('*}'));
+                const isPathMatch = matchesAllSegments && ((route.segments.length === pathSegments.length) || route.segments[route.segments.length - 1].endsWith('*}'));
 
                 return isPathMatch;
             });
         }
 
+        const candidates = this.routes.pathfinders.get(pathfinder);
         const wildcardRoutes = this.routes.wildcards;
         const route = matchRoute(candidates) || matchRoute(wildcardRoutes);
 
@@ -340,11 +337,11 @@ class Router {
             params : route.segments.reduce((params: RequestParams, routeSegment: string, index: number) => {
                 if (isDynamicSegment(routeSegment)) {
                     const name = getParamName(routeSegment);
-                    params[name] = segments[index];
+                    params[name] = pathSegments[index];
                 }
                 return params;
             }, {})
-        } as MatchedRoute;
+        };
     }
 }
 
