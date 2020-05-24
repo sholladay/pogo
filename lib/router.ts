@@ -7,14 +7,15 @@ import {
     MatchedRoute
 } from './types.ts';
 
-export type RouteOptionsHasHandler = RouteOptions & Pick<Required<RouteOptions>, 'handler'>;
-export type RouteOptionsHasMethod = RouteOptions & Pick<Required<RouteOptions>, 'method'>;
-export type RouteOptionsHasPath = RouteOptions & Pick<Required<RouteOptions>, 'path'>;
-export type RouteOptionsHasHandlerAndMethod = RouteOptions & Pick<Required<RouteOptions>, 'handler' | 'method'>;
-export type RouteOptionsHasHandlerAndPath = RouteOptions & Pick<Required<RouteOptions>, 'handler' | 'path'>;
-export type RouteOptionsHasMethodAndPath = RouteOptions & Pick<Required<RouteOptions>, 'method' | 'path'>;
+export type RouteOptionsHasHandler = RouteOptions & Required<Pick<RouteOptions, 'handler'>>;
+export type RouteOptionsHasMethod = RouteOptions & Required<Pick<RouteOptions, 'method'>>;
+export type RouteOptionsHasPath = RouteOptions & Required<Pick<RouteOptions, 'path'>>;
+export type RouteOptionsHasHandlerAndMethod = RouteOptions & Required<Pick<RouteOptions, 'handler' | 'method'>>;
+export type RouteOptionsHasHandlerAndPath = RouteOptions & Required<Pick<RouteOptions, 'handler' | 'path'>>;
+export type RouteOptionsHasMethodAndPath = RouteOptions & Required<Pick<RouteOptions, 'method' | 'path'>>;
+export type RequiredRouteOptions = RouteOptions & Required<Pick<RouteOptions, 'method' | 'path' | 'handler'>>;
 
-export type RoutesList = RouteOptions | Router | Iterable<RoutesList>;
+export type RoutesList = RequiredRouteOptions | Router | Iterable<RoutesList>;
 export type RoutesListHasHandler = RouteOptionsHasHandler | Router | Iterable<RoutesListHasHandler>;
 export type RoutesListHasMethod = RouteOptionsHasMethod | Router | Iterable<RoutesListHasMethod>;
 export type RoutesListHasPath = RouteOptionsHasPath | Router | string | Iterable<RoutesListHasPath>;
@@ -22,11 +23,11 @@ export type RoutesListHasHandlerAndMethod = RouteOptionsHasHandlerAndMethod | Ro
 export type RoutesListHasHandlerAndPath = RouteOptionsHasHandlerAndPath | Router | Iterable<RoutesListHasHandlerAndPath>;
 export type RoutesListHasMethodAndPath = RouteOptionsHasMethodAndPath | Router | Iterable<RoutesListHasMethodAndPath>;
 
-const paramPattern = /{(\w+)(?:\?|\*(?:[1-9]\d*)?)?}/u;
+const paramPattern = /\{(\w+)(?:\?|\*(?:[1-9]\d*)?)?\}/u;
 const paramsPattern = new RegExp(paramPattern, paramPattern.flags + 'g');
 
 const expandPath = (path: string): Array<string> => {
-    return Array.from(path.matchAll(paramsPattern)).flatMap((match) => {
+    return Array.from(path.matchAll(paramsPattern) as Iterable<RegExpExecArray>).flatMap((match) => {
         const [param, name] = match;
         const before = match.input.slice(0, match.index);
         const after = match.input.slice(match.index + param.length);
@@ -65,6 +66,12 @@ const toPathfinder = (segments: Array<string>): string => {
 
 const toSignature = (route: NormalizedRoute): string => {
     return route.method + ' ' + (route.vhost || '') + route.path;
+};
+
+const isInfinitePath = (segments: Array<string>): boolean => {
+    return segments.some((segment) => {
+        return /\{\w+\*\}/u.test(segment);
+    });
 };
 
 const fingerprintPath = (path: string): string => {
@@ -114,11 +121,8 @@ const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
 interface RoutingTable {
     conflictIds: Map<string, NormalizedRoute>,
     list: Array<NormalizedRoute>,
-    pathfinders: Map<string, Array<NormalizedRoute>>
-    // [method: string]: {
-    //     static: Map<string, NormalizedRoute>,
-    //     dynamic: Array<NormalizedRoute>
-    // }
+    pathfinders: Map<string, Array<NormalizedRoute>>,
+    wildcards: Array<NormalizedRoute>
 }
 
 class Router {
@@ -127,7 +131,8 @@ class Router {
         this.routes = {
             conflictIds : new Map(),
             list        : [],
-            pathfinders : new Map()
+            pathfinders : new Map(),
+            wildcards   : []
         };
         if (route) {
             this.add(route, options, handler);
@@ -154,11 +159,11 @@ class Router {
             return this;
         }
 
-        const normalizedRoute: Route = {
+        const normalizedRoute = {
             ...(typeof route === 'string' ? { path : route } : route),
             ...(typeof options === 'function' ? { handler : options} : options),
             ...(handler ? { handler } : null)
-        };
+        } as Route;
 
         if (typeof normalizedRoute.method === 'object' && Symbol.iterator in normalizedRoute.method) {
             for (const method of normalizedRoute.method as Iterable<string>) {
@@ -205,11 +210,17 @@ class Router {
 
         this.routes.conflictIds.set(conflictId, record);
 
-        const pathfinder = toPathfinder(record.segments);
-        const pathfinderRoutes = this.routes.pathfinders.get(pathfinder) ?? [];
-        pathfinderRoutes.push(record);
-        pathfinderRoutes.sort(sortRoutes);
-        this.routes.pathfinders.set(pathfinder, pathfinderRoutes);
+        if (isInfinitePath(record.segments)) {
+            this.routes.wildcards.push(record);
+            this.routes.wildcards.sort(sortRoutes);
+        }
+        else {
+            const pathfinder = toPathfinder(record.segments);
+            const pathfinderRoutes = this.routes.pathfinders.get(pathfinder) ?? [];
+            pathfinderRoutes.push(record);
+            pathfinderRoutes.sort(sortRoutes);
+            this.routes.pathfinders.set(pathfinder, pathfinderRoutes);
+        }
 
         this.routes.list.push(record);
         this.routes.list.sort(sortRoutes);
@@ -300,11 +311,11 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    lookup(method: string, path: string, host?: string): MatchedRoute | void {
+    lookup(method: string, path: string, host?: string): MatchedRoute | undefined {
         const pathSegments = path.split('/');
         const pathfinder = toPathfinder(pathSegments);
 
-        const matchRoute = (list: Array<NormalizedRoute> = []): NormalizedRoute => {
+        const matchRoute = (list: Array<NormalizedRoute> = []): NormalizedRoute | undefined => {
             return list.find((route: NormalizedRoute) => {
                 const isMethodMatch = route.method === method || route.method === '*';
                 if (!isMethodMatch) {

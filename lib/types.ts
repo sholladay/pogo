@@ -14,7 +14,7 @@ export type RequestParams = { [param: string]: string };
 export interface RouteOptions extends Omit<Partial<Route>, 'method' | 'path'> {
     method?: Route['method'] | Iterable<Route['method']>,
     path?: Route['path'] | Iterable<Route['path']>
-};
+}
 
 export interface NormalizedRoute extends Route {
     segments: Array<string>
