@@ -62,7 +62,7 @@ server
 server.route([
     { method : 'GET', path : '/hi', handler : () => 'Hello!' },
     { method : 'GET', path : '/bye', handler : () => 'Goodbye!' }
-});
+]);
 ```
 
 You can also configure the route to handle multiple methods by using an array, or `'*'` to handle all possible methods.
@@ -350,7 +350,7 @@ Type: [`Reader`](https://deno.land/typedoc/interfaces/deno.reader.html)
 
 The HTTP [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) value.
 
-You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `Deno.EOF` when the body is finished being read.
+You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `null` when the body is finished being read.
 
 ```js
 const decoder = new TextDecoder();
