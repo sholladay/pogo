@@ -10,18 +10,22 @@ test('new Router() static route', () => {
         xyz    : 123
     });
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -32,16 +36,22 @@ test('new Router() dynamic route', () => {
         xyz    : 123
     });
 
+    const record = {
+        method   : 'GET',
+        path     : '/{username}',
+        segments : ['', '{username}'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [{
-                method   : 'GET',
-                path     : '/{username}',
-                segments : ['{username}'],
-                xyz      : 123
-            }],
-            static : new Map()
-        }
+        conflictIds : new Map([
+            ['GET /?', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -55,18 +65,22 @@ test('new Router() router instance', () => {
     const extendedRouter = new Router();
     extendedRouter.add(baseRouter);
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(extendedRouter.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
     assertEquals(extendedRouter.routes, baseRouter.routes);
 });
@@ -78,29 +92,29 @@ test('new Router() array of methods', () => {
         xyz    : 123
     });
 
+    const getHello = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+    const postHello = {
+        method   : 'POST',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        },
-        post : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'POST',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', getHello],
+            ['POST /hello', postHello]
+        ]),
+        list: [getHello, postHello],
+        pathfinders : new Map([
+            ['/.', [getHello, postHello]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -118,24 +132,29 @@ test('new Router() array of routes', () => {
         }]
     ]);
 
+    const bye = {
+        method   : 'GET',
+        path     : '/bye',
+        segments : ['', 'bye'],
+        xyz      : 123
+    };
+    const hello = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/bye', {
-                    method   : 'GET',
-                    path     : '/bye',
-                    segments : ['bye'],
-                    xyz      : 123
-                }],
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /bye', bye],
+            ['GET /hello', hello]
+        ]),
+        list: [bye, hello],
+        pathfinders : new Map([
+            ['/.', [bye, hello]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -149,32 +168,33 @@ test('new Router() mixed route array with default method', () => {
         })
     ], { method : 'GET' });
 
+    const one = {
+        path     : '/one',
+        method   : 'GET',
+        segments : ['', 'one']
+    };
+    const two = {
+        path     : '/two',
+        method   : 'GET',
+        segments : ['', 'two']
+    };
+    const three = {
+        method   : 'POST',
+        path     : '/three',
+        segments : ['', 'three']
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/one', {
-                    method   : 'GET',
-                    path     : '/one',
-                    segments : ['one']
-                }],
-                ['/two', {
-                    method   : 'GET',
-                    path     : '/two',
-                    segments : ['two']
-                }]
-            ])
-        },
-        post : {
-            dynamic : [],
-            static  : new Map([
-                ['/three', {
-                    method   : 'POST',
-                    path     : '/three',
-                    segments : ['three']
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /one', one],
+            ['GET /two', two],
+            ['POST /three', three]
+        ]),
+        list: [one, three, two],
+        pathfinders : new Map([
+            ['/.', [one, three, two]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -186,18 +206,22 @@ test('router.add() static route', () => {
         xyz    : 123
     });
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -209,16 +233,22 @@ test('router.add() dynamic route', () => {
         xyz    : 123
     });
 
+    const record = {
+        method   : 'GET',
+        path     : '/{username}',
+        segments : ['', '{username}'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [{
-                method   : 'GET',
-                path     : '/{username}',
-                segments : ['{username}'],
-                xyz      : 123
-            }],
-            static : new Map()
-        }
+        conflictIds : new Map([
+            ['GET /?', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -233,18 +263,22 @@ test('router.add() router instance', () => {
     const extendedRouter = new Router();
     extendedRouter.add(baseRouter);
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(extendedRouter.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
     assertEquals(extendedRouter.routes, baseRouter.routes);
 });
@@ -257,29 +291,29 @@ test('router.add() array of methods', () => {
         xyz    : 123
     });
 
+    const getHello = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+    const postHello = {
+        method   : 'POST',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        },
-        post : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'POST',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', getHello],
+            ['POST /hello', postHello]
+        ]),
+        list: [getHello, postHello],
+        pathfinders : new Map([
+            ['/.', [getHello, postHello]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -298,24 +332,29 @@ test('router.add() array of routes', () => {
         }]
     ]);
 
+    const bye = {
+        method   : 'GET',
+        path     : '/bye',
+        segments : ['', 'bye'],
+        xyz      : 123
+    };
+    const hello = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/bye', {
-                    method   : 'GET',
-                    path     : '/bye',
-                    segments : ['bye'],
-                    xyz      : 123
-                }],
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /bye', bye],
+            ['GET /hello', hello]
+        ]),
+        list: [bye, hello],
+        pathfinders : new Map([
+            ['/.', [bye, hello]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -330,32 +369,33 @@ test('router.add() mixed route array with default method', () => {
         })
     ], { method : 'GET' });
 
+    const one = {
+        path     : '/one',
+        method   : 'GET',
+        segments : ['', 'one']
+    };
+    const two = {
+        path     : '/two',
+        method   : 'GET',
+        segments : ['', 'two']
+    };
+    const three = {
+        method   : 'POST',
+        path     : '/three',
+        segments : ['', 'three']
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/one', {
-                    method   : 'GET',
-                    path     : '/one',
-                    segments : ['one']
-                }],
-                ['/two', {
-                    method   : 'GET',
-                    path     : '/two',
-                    segments : ['two']
-                }]
-            ])
-        },
-        post : {
-            dynamic : [],
-            static  : new Map([
-                ['/three', {
-                    method   : 'POST',
-                    path     : '/three',
-                    segments : ['three']
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /one', one],
+            ['GET /two', two],
+            ['POST /three', three]
+        ]),
+        list: [one, three, two],
+        pathfinders : new Map([
+            ['/.', [one, three, two]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -366,18 +406,22 @@ test('router.get(options)', () => {
         xyz  : 123
     });
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -385,18 +429,22 @@ test('router.get(path, options)', () => {
     const router = new Router();
     router.get('/hello', { xyz : 123 });
 
+    const record = {
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -405,18 +453,22 @@ test('router.get(path, handler)', () => {
     const handler = () => {};
     router.get('/hello', handler);
 
+    const record = {
+        handler,
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello']
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    handler,
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello']
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -428,19 +480,23 @@ test('router.get(options, handler)', () => {
         xyz  : 123
     }, handler);
 
+    const record = {
+        handler,
+        method   : 'GET',
+        path     : '/hello',
+        segments : ['', 'hello'],
+        xyz      : 123
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    handler,
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -449,19 +505,23 @@ test('router.get(path, options, handler)', () => {
     const handler = () => {};
     router.get('/hello', { xyz : 123 }, handler);
 
+    const record = {
+        path     : '/hello',
+        xyz      : 123,
+        method   : 'GET',
+        handler,
+        segments : ['', 'hello']
+    };
+
     assertEquals(router.routes, {
-        get : {
-            dynamic : [],
-            static  : new Map([
-                ['/hello', {
-                    handler,
-                    method   : 'GET',
-                    path     : '/hello',
-                    segments : ['hello'],
-                    xyz      : 123
-                }]
-            ])
-        }
+        conflictIds : new Map([
+            ['GET /hello', record]
+        ]),
+        list: [record],
+        pathfinders : new Map([
+            ['/.', [record]]
+        ]),
+        wildcards : []
     });
 });
 
@@ -476,7 +536,7 @@ test('router.lookup() static routes', () => {
         method   : 'GET',
         params   : {},
         path     : '/hello',
-        segments : ['hello'],
+        segments : ['', 'hello'],
         xyz      : 123
     });
     assertEquals(router.lookup('POST', '/hello'), undefined);
@@ -497,7 +557,7 @@ test('router.lookup() dynamic routes', () => {
             userId : 'abc'
         },
         path     : '/{api}/{userId}',
-        segments : ['{api}', '{userId}'],
+        segments : ['', '{api}', '{userId}'],
         xyz      : 123
     });
     assertEquals(router.lookup('POST', '/users/abc'), undefined);
@@ -517,7 +577,7 @@ test('router.lookup() wildcard method routes', () => {
             userId : 'foo'
         },
         path     : '/users/{userId}',
-        segments : ['users', '{userId}'],
+        segments : ['', 'users', '{userId}'],
         xyz      : 123
     });
     assertEquals(router.lookup('POST', '/users/foo'), {
@@ -526,7 +586,7 @@ test('router.lookup() wildcard method routes', () => {
             userId : 'foo'
         },
         path     : '/users/{userId}',
-        segments : ['users', '{userId}'],
+        segments : ['', 'users', '{userId}'],
         xyz      : 123
     });
     assertEquals(router.lookup('GET', '/users/bar'), {
@@ -535,14 +595,14 @@ test('router.lookup() wildcard method routes', () => {
             userId : 'bar'
         },
         path     : '/users/{userId}',
-        segments : ['users', '{userId}'],
+        segments : ['', 'users', '{userId}'],
         xyz      : 123
     });
     assertEquals(router.lookup('GET', '/users'), undefined);
     assertEquals(router.lookup('GET', '/users/'), undefined);
 });
 
-test('router.lookup() not found', () => {
+test('router.lookup() not found without catch-all', () => {
     const router = new Router({
         method : '*',
         path   : '/one',
@@ -550,4 +610,30 @@ test('router.lookup() not found', () => {
     });
     assertEquals(router.lookup('GET', '/'), undefined);
     assertEquals(router.lookup('GET', '/two'), undefined);
+});
+
+test('router.lookup() catch-all', () => {
+    const router = new Router({
+        method : '*',
+        path   : '/{any*}',
+        xyz    : 123
+    });
+    assertEquals(router.lookup('GET', '/'), {
+        method : '*',
+        params : {
+            any : ''
+        },
+        path     : '/{any*}',
+        segments : ['', '{any*}'],
+        xyz      : 123
+    });
+    assertEquals(router.lookup('GET', '/foo'), {
+        method : '*',
+        params : {
+            any : 'foo'
+        },
+        path     : '/{any*}',
+        segments : ['', '{any*}'],
+        xyz      : 123
+    });
 });

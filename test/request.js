@@ -335,7 +335,7 @@ test('request.route is a router record', async () => {
             api : 'status'
         },
         path     : '/{api}',
-        segments : ['{api}'],
+        segments : ['', '{api}'],
         type     : 'object'
     }));
 });

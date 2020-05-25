@@ -7,15 +7,15 @@ import {
     MatchedRoute
 } from './types.ts';
 
-export type RouteOptionsHasHandler = RouteOptions & Pick<Route, 'handler'>;
-export type RouteOptionsHasMethod = RouteOptions & Pick<Route, 'method'>;
-export type RouteOptionsHasPath = RouteOptions & Pick<Route, 'path'>;
-export type RouteOptionsHasHandlerAndMethod = RouteOptions & Pick<Route, 'handler' | 'method'>;
-export type RouteOptionsHasHandlerAndPath = RouteOptions & Pick<Route, 'handler' | 'path'>;
-export type RouteOptionsHasMethodAndPath = RouteOptions & Pick<Route, 'method' | 'path'>;
+export type RouteOptionsHasHandler = RouteOptions & Required<Pick<RouteOptions, 'handler'>>;
+export type RouteOptionsHasMethod = RouteOptions & Required<Pick<RouteOptions, 'method'>>;
+export type RouteOptionsHasPath = RouteOptions & Required<Pick<RouteOptions, 'path'>>;
+export type RouteOptionsHasHandlerAndMethod = RouteOptions & Required<Pick<RouteOptions, 'handler' | 'method'>>;
+export type RouteOptionsHasHandlerAndPath = RouteOptions & Required<Pick<RouteOptions, 'handler' | 'path'>>;
+export type RouteOptionsHasMethodAndPath = RouteOptions & Required<Pick<RouteOptions, 'method' | 'path'>>;
+export type RequiredRouteOptions = RouteOptions & Required<Pick<RouteOptions, 'method' | 'path' | 'handler'>>;
 
-export type RouteOptionsList = RouteOptions | Router | Iterable<RouteOptionsList>;
-export type RoutesList = Route | Router | Iterable<RoutesList>;
+export type RoutesList = RequiredRouteOptions | Router | Iterable<RoutesList>;
 export type RoutesListHasHandler = RouteOptionsHasHandler | Router | Iterable<RoutesListHasHandler>;
 export type RoutesListHasMethod = RouteOptionsHasMethod | Router | Iterable<RoutesListHasMethod>;
 export type RoutesListHasPath = RouteOptionsHasPath | Router | string | Iterable<RoutesListHasPath>;
@@ -23,13 +23,69 @@ export type RoutesListHasHandlerAndMethod = RouteOptionsHasHandlerAndMethod | Ro
 export type RoutesListHasHandlerAndPath = RouteOptionsHasHandlerAndPath | Router | Iterable<RoutesListHasHandlerAndPath>;
 export type RoutesListHasMethodAndPath = RouteOptionsHasMethodAndPath | Router | Iterable<RoutesListHasMethodAndPath>;
 
+const paramPattern = /\{(\w+)(?:\?|\*(?:[1-9]\d*)?)?\}/u;
+const paramsPattern = new RegExp(paramPattern, paramPattern.flags + 'g');
+
+const expandPath = (path: string): Array<string> => {
+    return Array.from(path.matchAll(paramsPattern) as Iterable<RegExpExecArray>).flatMap((match) => {
+        const [param, name] = match;
+        const before = match.input.slice(0, match.index);
+        const after = match.input.slice(match.index + param.length);
+
+        // Optional param, expand to paths WITH and WITHOUT the param
+        if (param.endsWith('?}')) {
+            const isWholeSegment = before.endsWith('/') && after.startsWith('/');
+            const withParam = before + `{${name}}` + after;
+            const withoutParam = before + (isWholeSegment ? after.slice(1) : after)
+            return [withParam, withoutParam];
+        }
+
+        return [];
+    });
+};
+
+const isStaticPath = (path: string): boolean => {
+    return !path.includes('{');
+};
+
 const isDynamicSegment = (segment: string): boolean => {
     return segment.startsWith('{') && segment.endsWith('}');
 };
 
 const getParamName = (segment: string): string => {
-    return segment.slice(1, -1);
+    const param = segment.match(paramPattern);
+    return param ? param[1] : '';
 };
+
+const toPathfinder = (segments: Array<string>): string => {
+    const replacePart = (str: string) => {
+        return str && '.';
+    };
+    return segments.map(replacePart).join('/');
+};
+
+const toSignature = (route: NormalizedRoute): string => {
+    return route.method + ' ' + (route.vhost || '') + route.path;
+};
+
+const isInfinitePath = (segments: Array<string>): boolean => {
+    return segments.some((segment) => {
+        return /\{\w+\*\}/u.test(segment);
+    });
+};
+
+const fingerprintPath = (path: string): string => {
+    return path.replace(paramsPattern, (param) => {
+        return param.endsWith('*}') ? '#' : '?';
+    });
+};
+
+const toConflictId = (route: NormalizedRoute): string => {
+    return toSignature({
+        ...route,
+        path : fingerprintPath(route.path)
+    });
+}
 
 const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
     const leftFirst = -1;
@@ -63,16 +119,21 @@ const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
 };
 
 interface RoutingTable {
-    [method: string]: {
-        static: Map<string, NormalizedRoute>,
-        dynamic: Array<NormalizedRoute>
-    }
+    conflictIds: Map<string, NormalizedRoute>,
+    list: Array<NormalizedRoute>,
+    pathfinders: Map<string, Array<NormalizedRoute>>,
+    wildcards: Array<NormalizedRoute>
 }
 
 class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
-        this.routes = {};
+        this.routes = {
+            conflictIds : new Map(),
+            list        : [],
+            pathfinders : new Map(),
+            wildcards   : []
+        };
         if (route) {
             this.add(route, options, handler);
         }
@@ -94,18 +155,15 @@ class Router {
             return this;
         }
         if (route instanceof Router) {
-            for (const table of Object.values(route.routes)) {
-                this.add(table.dynamic);
-                this.add(table.static.values());
-            }
+            this.add(route.routes.list);
             return this;
         }
 
         const normalizedRoute = {
             ...(typeof route === 'string' ? { path : route } : route),
             ...(typeof options === 'function' ? { handler : options} : options),
-            ...(handler ? { handler } : undefined)
-        } as NormalizedRoute;
+            ...(handler ? { handler } : null)
+        } as Route;
 
         if (typeof normalizedRoute.method === 'object' && Symbol.iterator in normalizedRoute.method) {
             for (const method of normalizedRoute.method as Iterable<string>) {
@@ -117,28 +175,56 @@ class Router {
             return this;
         }
 
-        const method = normalizedRoute.method.toLowerCase();
-        this.routes[method] = this.routes[method] ?? {
-            static  : new Map(),
-            dynamic : []
-        };
-        const table = this.routes[method];
-        const segments = normalizedRoute.path.split('/').filter(Boolean);
-        const isDynamic = segments.some(isDynamicSegment);
-        const record = {
+        if (typeof normalizedRoute.path === 'object' && Symbol.iterator in normalizedRoute.path) {
+            for (const path of normalizedRoute.path as Iterable<string>) {
+                this.add({
+                    ...normalizedRoute,
+                    path
+                });
+            }
+            return this;
+        }
+
+        const expandedPaths = expandPath(normalizedRoute.path);
+        if (expandedPaths.length > 0) {
+            this.add({
+                ...normalizedRoute,
+                path : expandedPaths
+            });
+            return this;
+        }
+
+        const record: NormalizedRoute = {
             ...normalizedRoute,
-            segments
+            method   : normalizedRoute.method.toUpperCase(),
+            segments : normalizedRoute.path.split('/')
         };
-        if (isDynamic) {
-            table.dynamic.push(record);
-            table.dynamic.sort(sortRoutes);
+
+        const conflictId = toConflictId(record);
+        const existingRoute = this.routes.conflictIds.get(conflictId);
+        if (existingRoute) {
+            const newRoute = toSignature(record);
+            const oldRoute = toSignature(existingRoute);
+            throw new Error(`Route conflict: new route "${newRoute}" conflicts with existing route "${oldRoute}"`);
+        }
+
+        this.routes.conflictIds.set(conflictId, record);
+
+        if (isInfinitePath(record.segments)) {
+            this.routes.wildcards.push(record);
+            this.routes.wildcards.sort(sortRoutes);
         }
         else {
-            table.static.set(record.path, record);
-            table.static = new Map([...table.static.entries()].sort((left, right) => {
-                return sortRoutes(left[1], right[1]);
-            }));
+            const pathfinder = toPathfinder(record.segments);
+            const pathfinderRoutes = this.routes.pathfinders.get(pathfinder) ?? [];
+            pathfinderRoutes.push(record);
+            pathfinderRoutes.sort(sortRoutes);
+            this.routes.pathfinders.set(pathfinder, pathfinderRoutes);
         }
+
+        this.routes.list.push(record);
+        this.routes.list.sort(sortRoutes);
+
         return this;
     }
     all(route: RoutesListHasHandlerAndPath, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
@@ -225,45 +311,48 @@ class Router {
         this.add(route, config, handler);
         return this;
     }
-    lookup(method: string, path: string): MatchedRoute | void {
-        const methodTable = this.routes[method.toLowerCase()];
-        const wildTable = this.routes['*'];
-        if (!methodTable && !wildTable) {
-            return;
+    lookup(method: string, path: string, host?: string): MatchedRoute | undefined {
+        const pathSegments = path.split('/');
+        const pathfinder = toPathfinder(pathSegments);
+
+        const matchRoute = (list: Array<NormalizedRoute> = []): NormalizedRoute | undefined => {
+            return list.find((route: NormalizedRoute) => {
+                const isMethodMatch = route.method === method || route.method === '*';
+                if (!isMethodMatch) {
+                    return false;
+                }
+                const isHostMatch = !host || !route.vhost || route.vhost === host;
+                if (!isHostMatch) {
+                    return false;
+                }
+                if (isStaticPath(route.path)) {
+                    return route.path === path;
+                }
+
+                const matchesAllSegments = route.segments.every((routeSegment: string, index: number): boolean => {
+                    return isDynamicSegment(routeSegment) || (routeSegment === pathSegments[index]);
+                });
+
+                const isPathMatch = matchesAllSegments && ((route.segments.length === pathSegments.length) || route.segments[route.segments.length - 1].endsWith('*}'));
+
+                return isPathMatch;
+            });
         }
-        if (methodTable?.static.has(path)) {
-            return {
-                ...methodTable.static.get(path),
-                params : {}
-            } as MatchedRoute;
-        }
-        if (wildTable?.static.has(path)) {
-            return {
-                ...wildTable.static.get(path),
-                params : {}
-            } as MatchedRoute;
-        }
-        const segments = path.split('/').filter(Boolean);
-        const methodDynamic = methodTable?.dynamic ?? [];
-        const wildDynamic = wildTable?.dynamic ?? [];
-        const dynamicRoutes = [...methodDynamic, ...wildDynamic].sort(sortRoutes);
-        const route = dynamicRoutes.find((route: NormalizedRoute) => {
-            const matchesRequest = (routeSegment: string, index: number): boolean => {
-                return routeSegment === segments[index] || isDynamicSegment(routeSegment);
-            };
-            return segments.length === route.segments.length && route.segments.every(matchesRequest);
-        });
+
+        const candidates = this.routes.pathfinders.get(pathfinder);
+        const wildcardRoutes = this.routes.wildcards;
+        const route = matchRoute(candidates) || matchRoute(wildcardRoutes);
 
         return route && {
             ...route,
             params : route.segments.reduce((params: RequestParams, routeSegment: string, index: number) => {
                 if (isDynamicSegment(routeSegment)) {
                     const name = getParamName(routeSegment);
-                    params[name] = segments[index];
+                    params[name] = pathSegments[index];
                 }
                 return params;
             }, {})
-        } as MatchedRoute;
+        };
     }
 }
 
