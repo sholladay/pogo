@@ -4,6 +4,8 @@
 
 Pogo is an easy-to-use, safe, and expressive framework for writing web servers and applications. It is inspired by [hapi](https://github.com/hapijs/hapi).
 
+[Documentation](./docs)
+
 *Supports Deno v1.0.0 and higher.*
 
 ## Contents
@@ -200,7 +202,7 @@ Type: `object`
 Type: `string`<br>
 Default: `'localhost'`
 
-Specifies which domain or IP address the server will listen on when [`server.start()`](#serverstart) is called. Use `'0.0.0.0'` to listen on all available addresses.
+Specifies which domain or IP address the server will listen on when [`server.start()`](#serverstart) is called. Use `'0.0.0.0'` to listen on all available addresses, as mentioned in the [security](./docs/security.md) documentation.
 
 ##### port
 
@@ -632,6 +634,8 @@ Creates a new response with an optional [body](https://developer.mozilla.org/en-
 Returns the response so other methods can be chained.
 
 ### Router
+
+Documentation: [Routing](./docs/routing.md)
 
 A router is used to store and lookup routes. The server has a built-in router at [`server.router`](#serverrouter), which it uses to match an incoming request to a route handler function that generates a response. You can use the server's router directly or you can create a custom router with `pogo.router()`.
 
