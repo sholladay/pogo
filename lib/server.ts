@@ -84,6 +84,7 @@ export default class Server {
         });
         this.raw = server;
         for await (const request of server) {
+            // NOTE: Do not `await` here (handle requests concurrently for performance)
             this.respond(request);
         }
     }

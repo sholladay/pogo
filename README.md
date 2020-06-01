@@ -139,7 +139,7 @@ const response = await server.inject({
    - [`server.start()`](#serverstart)
    - [`server.stop()`](#serverstop)
  - [Request](#request-1)
-   - [`request.body()`](#requestbody)
+   - [`request.body`](#requestbody)
    - [`request.headers`](#requestheaders)
    - [`request.host`](#requesthost)
    - [`request.hostname`](#requesthostname)
@@ -419,7 +419,7 @@ The scheme and host parts of the request URL. Shortcut for `request.url.origin`.
 
 Type: `object`
 
-Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path. Shortcut for `request.route.params`.
+Contains the name/value pairs of [path parameters](./docs/routing.md#parameters), where each key is a parameter name from the route path and the value is the corresponding part of the request path. Shortcut for `request.route.params`.
 
 #### request.path
 
@@ -485,7 +485,7 @@ The server that is handling the request.
 
 Type: `object`
 
-Contains all name/value pairs of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
+Contains the name/value pairs of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
 
 #### request.url
 
