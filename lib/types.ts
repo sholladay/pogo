@@ -26,7 +26,9 @@ export interface MatchedRoute extends NormalizedRoute {
 
 export interface ServerOptions {
     hostname?: string,
-    port: number
+    port: number,
+    certFile?: string,
+    keyFile?: string
 }
 
 type JSONStringifyable = boolean | null | number | object | string;

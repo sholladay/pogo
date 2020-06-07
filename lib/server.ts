@@ -26,11 +26,11 @@ const getPathname = (path: string): string => {
 };
 
 export default class Server {
-    _config: { [option: string]: any };
+    options: ServerOptions;
     raw?: http.Server;
     router: Router;
     constructor(options: ServerOptions) {
-        this._config = {
+        this.options = {
             hostname : 'localhost',
             ...options
         };
@@ -78,10 +78,14 @@ export default class Server {
         return this;
     }
     async start() {
-        const server = http.serve({
-            hostname : this._config.hostname,
-            port     : this._config.port
-        });
+        const { certFile, keyFile, ...options } = this.options;
+        const server = (typeof certFile === 'string' && typeof keyFile === 'string') ?
+            http.serveTLS({
+                ...options,
+                certFile,
+                keyFile
+            }) :
+            http.serve(options);
         this.raw = server;
         for await (const request of server) {
             // NOTE: Do not `await` here (handle requests concurrently for performance)

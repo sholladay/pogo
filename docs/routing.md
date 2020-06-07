@@ -48,7 +48,7 @@ Note that routes _are_ allowed to mask each other, so you can have a `'* /foo'` 
 
 ## Resources
 
- - [`server.route()`](https://github.com/sholladay/pogo#serverrouteroute)
+ - [`server.route()`](https://github.com/sholladay/pogo#serverrouteroute-options-handler)
  - [`server.router`](https://github.com/sholladay/pogo#serverrouter)
- - [`pogo.router()`](https://github.com/sholladay/pogo#pogorouteroption)
+ - [`pogo.router()`](https://github.com/sholladay/pogo#pogorouteroptions)
  - [`Router` API](https://github.com/sholladay/pogo#router)
