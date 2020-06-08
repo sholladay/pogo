@@ -198,6 +198,20 @@ const server = pogo.server();
 
 Type: `object`
 
+##### catchAll
+
+Type: `function`
+
+Optional route handler to be used as a fallback for requests that do not match any other route. This overrides the default 404 Not Found behavior built into the framework. Shortcut for `server.router.all('/{catchAll*}', catchAll)`.
+
+```js
+pogo.server({
+    catchAll(request, h) {
+        return h.response('the void').code(404);
+    }
+});
+```
+
 ##### certFile
 
 Type: `string`\

@@ -35,6 +35,10 @@ export default class Server {
             ...options
         };
         this.router = new Router();
+        const { catchAll } = this.options;
+        if (typeof catchAll === 'function') {
+            this.router.all('/{catchAll*}', catchAll);
+        }
     }
     async inject(rawRequest: http.ServerRequest): Promise<Response> {
         const route = this.router.lookup(rawRequest.method, getPathname(rawRequest.url));

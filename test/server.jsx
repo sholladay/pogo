@@ -433,3 +433,46 @@ test('server.route() handler throws bang.badRequest()', async () => {
         status  : 400
     }));
 });
+
+test('server catchAll option', async () => {
+    const server = pogo.server({
+        catchAll(request, h) {
+            return h.response('Custom fallback, ' + request.method).code(418);
+        }
+    });
+    server.route({
+        method : 'GET',
+        path   : '/hello',
+        handler(request) {
+            return 'Hi, ' + request.method;
+        }
+    });
+    const getHelloResponse = await server.inject({
+        method : 'GET',
+        url    : '/hello'
+    });
+    const getRootResponse = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    const getVoidResponse = await server.inject({
+        method : 'GET',
+        url    : '/void'
+    });
+    const postVoidResponse = await server.inject({
+        method : 'POST',
+        url    : '/void'
+    });
+    assertStrictEq(getHelloResponse.status, 200);
+    assertStrictEq(getHelloResponse.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(getHelloResponse.body, 'Hi, GET');
+    assertStrictEq(getRootResponse.status, 418);
+    assertStrictEq(getRootResponse.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(getRootResponse.body, 'Custom fallback, GET');
+    assertStrictEq(getVoidResponse.status, 418);
+    assertStrictEq(getVoidResponse.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(getVoidResponse.body, 'Custom fallback, GET');
+    assertStrictEq(postVoidResponse.status, 418);
+    assertStrictEq(postVoidResponse.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEq(postVoidResponse.body, 'Custom fallback, POST');
+});

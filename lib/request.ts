@@ -14,7 +14,7 @@ export default class Request {
     route: MatchedRoute;
     method: string;
     headers: Headers;
-    params: RequestParams
+    params: RequestParams;
     referrer: string;
     response: Response;
     server: Server;
