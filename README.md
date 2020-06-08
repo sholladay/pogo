@@ -206,7 +206,7 @@ Optional route handler to be used as a fallback for requests that do not match a
 
 ```js
 pogo.server({
-    catchAll : async (request, h) => {
+    catchAll(request, h) {
         return h.response('the void').code(404);
     }
 });
