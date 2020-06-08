@@ -5,16 +5,16 @@ import { RequestParams, MatchedRoute } from './types.ts';
 
 interface RequestOptions {
     raw: http.ServerRequest,
-    route?: MatchedRoute,
+    route: MatchedRoute,
     server: Server
 }
 
 export default class Request {
     raw: http.ServerRequest;
-    route?: MatchedRoute;
+    route: MatchedRoute;
     method: string;
     headers: Headers;
-    params: RequestParams
+    params: RequestParams;
     referrer: string;
     response: Response;
     server: Server;
@@ -25,7 +25,7 @@ export default class Request {
         this.route = options.route;
         this.method = this.raw.method;
         this.headers = this.raw.headers || new Headers({ host : 'localhost' });
-        this.params = this.route ? this.route.params : {};
+        this.params = this.route.params;
         this.referrer = this.headers.get('referer') || '';
         this.response = new Response();
         this.server = options.server;
