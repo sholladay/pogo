@@ -68,7 +68,7 @@ export default class Response {
             this.code(_isRewritable() ? status.Found : status.TemporaryRedirect);
             return this;
         };
-        this.rewritable = (isRewritable: boolean) => {
+        this.rewritable = (isRewritable?: boolean) => {
             if (isRewritable === false) {
                 this.code(_isTemporary() ? status.TemporaryRedirect : status.PermanentRedirect);
             }

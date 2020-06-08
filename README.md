@@ -45,7 +45,7 @@ The examples that follow will build on this to add more capabilities to the serv
 
 > A route matches an incoming request to a handler function that creates a response
 
-Adding routes is easy, just call [`server.route()`](#serverrouteroute) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
+Adding routes is easy, just call [`server.route()`](#serverrouteroute-options-handler) and pass it a single route or an array of routes. You can call `server.route()` multiple times. You can even chain calls to `server.route()`, because it returns the server instance.
 
 Add routes in any order you want to, it's safe! Pogo orders them internally by specificity, such that their order of precedence is stable and predictable and avoids ambiguity or conflicts.
 
@@ -98,10 +98,10 @@ You can do webpage templating with [React](https://reactjs.org/) inside of route
 
 Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
-Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`, however you'll need to import the type definitions for JSX (see [deno_types](https://github.com/Soremwar/deno_types)).
+Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`. The type definitions should load automatically from the Pika CDN, but if you run into problems when using `.tsx`, try loading them manually (see [deno_types](https://github.com/Soremwar/deno_types)).
 
 ```jsx
-import React from 'https://dev.jspm.io/react';
+import React from 'https://cdn.pika.dev/react';
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
@@ -130,16 +130,16 @@ const response = await server.inject({
 
 ## API
 
- - [`pogo.server(option)`](#pogoserveroption)
- - [`pogo.router(option)`](#pogorouteroption)
+ - [`pogo.server(options)`](#pogoserveroptions)
+ - [`pogo.router(options?)`](#pogorouteroptions)
  - [Server](#server)
    - [`server.inject(request)`](#serverinjectrequest)
-   - [`server.route(route)`](#serverrouteroute)
+   - [`server.route(route, options?, handler?)`](#serverrouteroute-options-handler)
    - [`server.router`](#serverrouter)
    - [`server.start()`](#serverstart)
    - [`server.stop()`](#serverstop)
  - [Request](#request-1)
-   - [`request.body()`](#requestbody)
+   - [`request.body`](#requestbody)
    - [`request.headers`](#requestheaders)
    - [`request.host`](#requesthost)
    - [`request.hostname`](#requesthostname)
@@ -160,13 +160,13 @@ const response = await server.inject({
  - [Response](#response)
    - [`response.body`](#responsebody)
    - [`response.code(statusCode)`](#responsecodestatuscode)
-   - [`response.created(url)`](#responsecreatedurl)
+   - [`response.created(url?)`](#responsecreatedurl)
    - [`response.header(name, value)`](#responseheadername-value)
    - [`response.headers`](#responseheaders)
    - [`response.location(url)`](#responselocationurl)
    - [`response.permanent()`](#responsepermanent)
    - [`response.redirect(url)`](#responseredirecturl)
-   - [`response.rewritable(isRewritable)`](#responserewritableisrewritable)
+   - [`response.rewritable(isRewritable?)`](#responserewritableisrewritable)
    - [`response.state(name, value)`](#responsestatename-value)
    - [`response.status`](#responsestatus)
    - [`response.temporary()`](#responsetemporary)
@@ -174,18 +174,19 @@ const response = await server.inject({
    - [`response.unstate(name)`](#responseunstatename)
  - [Response Toolkit](#response-toolkit)
    - [`h.redirect(url)`](#hredirecturl)
-   - [`h.response(body)`](#hresponsebody)
+   - [`h.response(body?)`](#hresponsebody)
  - [Router](#router)
-   - [`router.add(route)`](#routeraddroute)
-   - [`router.all(route)`](#routerallroute)
-   - [`router.delete(route)`](#routerdeleteroute)
-   - [`router.get(route)`](#routergetroute)
-   - [`router.patch(route)`](#routerpatchroute)
-   - [`router.post(route)`](#routerpostroute)
-   - [`router.put(route)`](#routerputroute)
+   - [`router.add(route, options?, handler?)`](#routeraddroute-options-handler)
+   - [`router.all(route, options?, handler?)`](#routerallroute-options-handler)
+   - [`router.delete(route, options?, handler?)`](#routerdeleteroute-options-handler)
+   - [`router.get(route, options?, handler?)`](#routergetroute-options-handler)
+   - [`router.lookup(method, path)`](#routerlookupmethod-path)
+   - [`router.patch(route, options?, handler?)`](#routerpatchroute-options-handler)
+   - [`router.post(route, options?, handler?)`](#routerpostroute-options-handler)
+   - [`router.put(route, options?, handler?)`](#routerputroute-options-handler)
    - [`router.routes`](#routerroutes)
 
-### pogo.server(option)
+### pogo.server(options)
 
 Returns a [`Server`](#server) instance, which can then be used to add routes and start listening for requests.
 
@@ -193,38 +194,53 @@ Returns a [`Server`](#server) instance, which can then be used to add routes and
 const server = pogo.server();
 ```
 
-#### option
+#### options
 
 Type: `object`
 
+##### catchAll
+
+Type: `function`
+
+Optional route handler to be used as a fallback for requests that do not match any other route. This overrides the default 404 Not Found behavior built into the framework. Shortcut for `server.router.all('/{catchAll*}', catchAll)`.
+
+```js
+pogo.server({
+    catchAll : async (request, h) => {
+        return h.response('the void').code(404);
+    }
+});
+```
+
+##### certFile
+
+Type: `string`\
+Example: `'/path/to/file.cert'`
+
+Optional filepath to an X.509 [public key certificate](https://en.wikipedia.org/wiki/Public_key_certificate) for the server to read when [`server.start()`](#serverstart) is called, in order to set up HTTPS. Requires the use of the `keyFile` option.
+
 ##### hostname
 
-Type: `string`<br>
+Type: `string`\
 Default: `'localhost'`
 
-Specifies which domain or IP address the server will listen on when [`server.start()`](#serverstart) is called. Use `'0.0.0.0'` to listen on all available addresses, as mentioned in the [security](./docs/security.md) documentation.
+Optional [domain](https://en.wikipedia.org/wiki/Domain_name) or [IP address](https://en.wikipedia.org/wiki/IP_address) for the server to listen on when [`server.start()`](#serverstart) is called. Use `'0.0.0.0'` to listen on all available addresses, as mentioned in the [security](./docs/security.md) documentation.
+
+##### keyFile
+
+Type: `string`\
+Example: `'/path/to/file.key'`
+
+Optional filepath to a private key for the server to read when [`server.start()`](#serverstart) is called, in order to set up HTTPS. Requires the use of the `certFile` option.
 
 ##### port
 
-Type: `number`<br>
+Type: `number`\
 Example: `3000`
 
-Specifies which port number the server will listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on an available port assigned by the operating system.
+Any valid [port](https://en.wikipedia.org/wiki/Port_(computer_networking)) number (`0` to `65535`) for the server to listen on when [`server.start()`](#serverstart) is called. Use `0` to listen on an available port assigned by the operating system.
 
-##### catchAll
-
-Type: `function`<br>
-Example:
-
-    async (request, h) => {
-        return h.response("the void")
-            .code(404);
-    }
-
-This is a custom handler (taking precedence over the default one) for requests that do not match any of the defined routes.
-
-
-### pogo.router(option)
+### pogo.router(options?)
 
 Returns a [`Router`](#router) instance, which can then be used to add routes.
 
@@ -255,21 +271,19 @@ Type: `object`
 
 ###### method
 
-Type: `string`<br>
+Type: `string`\
 Example: `'GET'`
 
 Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), such as `GET` or `POST`. Used to lookup the route handler.
 
 ###### url
 
-Type: `string`<br>
+Type: `string`\
 Example: `'/'`
 
 Any valid URL path. Used to lookup the route handler.
 
-#### server.route(route)
-#### server.route(route, handler)
-#### server.route(route, options, handler)
+#### server.route(route, options?, handler?)
 
 Adds a route to the server so that the server knows how to respond to requests that match the given [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) and URL path. Shortcut for `server.router.add()`.
 
@@ -291,14 +305,14 @@ Type: `object` | `string` | `Router` | `Array<object | string | Router>`
 
 ###### method
 
-Type: `string` | `Array<string>`<br>
+Type: `string` | `Array<string>`\
 Example: `'GET'`
 
 Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), array of methods, or `'*'` to match all methods. Used to limit which requests will trigger the route handler.
 
 ###### path
 
-Type: `string`<br>
+Type: `string`\
 Example: `'/users/{userId}'`
 
 Any valid URL path. Used to limit which requests will trigger the route handler.
@@ -389,7 +403,7 @@ Contains the [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/He
 
 #### request.host
 
-Type: `string`<br>
+Type: `string`\
 Example: `'localhost:3000'`
 
 The value of the HTTP [`Host`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header, which is a combination of the hostname and port at which the server received the request, separated by a `:` colon. Useful for returning different content depending on which URL your visitors use to access the server. Shortcut for `request.url.host`.
@@ -398,7 +412,7 @@ To get the hostname, which does not include the port number, see [`request.hostn
 
 #### request.hostname
 
-Type: `string`<br>
+Type: `string`\
 Example: `'localhost'`
 
 The hostname part of the HTTP [`Host`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header. That is, the domain or IP address at which the server received the request, without the port number. Useful for returning different content depending on which URL your visitors use to access the server. Shortcut for `request.url.hostname`.
@@ -407,7 +421,7 @@ To get the host, which includes the port number, see [`request.host`](#requestho
 
 #### request.href
 
-Type: `string`<br>
+Type: `string`\
 Example: `'http://localhost:3000/page.html?query'`
 
 The full URL associated with the request, represented as a string. Shortcut for `request.url.href`.
@@ -416,14 +430,14 @@ To get this value as a parsed object instead, use [`request.url`](#requesturl).
 
 #### request.method
 
-Type: `string`<br>
+Type: `string`\
 Example: `'GET'`
 
 The [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) associated with the request, such as [`GET`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) or [`POST`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
 
 #### request.origin
 
-Type: `string`<br>
+Type: `string`\
 Example: `'http://localhost:3000'`
 
 The scheme and host parts of the request URL. Shortcut for `request.url.origin`.
@@ -432,11 +446,11 @@ The scheme and host parts of the request URL. Shortcut for `request.url.origin`.
 
 Type: `object`
 
-Contains the dynamic variables of the `path` in the route configuration, where each key is a variable name and the value is the corresponding part of the request path. Shortcut for `request.route.params`.
+Contains the name/value pairs of [path parameters](./docs/routing.md#parameters), where each key is a parameter name from the route path and the value is the corresponding part of the request path. Shortcut for `request.route.params`.
 
 #### request.path
 
-Type: `string`<br>
+Type: `string`\
 Example: `/page.html`
 
 The path part of the request URL, excluding the query. Shortcut for `request.url.pathname`.
@@ -467,13 +481,13 @@ The response that will be sent for the request. To create a new response, see [`
 
 Type: `object`
 
-The route that is handling the request, as given to [`server.route()`](#serverrouteroute), with the following additional properties:
+The route that is handling the request, as given to [`server.route()`](#serverrouteroute-options-handler), with the following additional properties:
  - `params` is an object with properties for each dynamic path parameter
  - `segments` is an array of path parts, as in the values separated by `/` slashes in the route path
 
 #### request.search
 
-Type: `string`<br>
+Type: `string`\
 Example: `'?query'`
 
 The query part of the request URL, represented as a string. Shortcut for `request.url.search`.
@@ -498,7 +512,7 @@ The server that is handling the request.
 
 Type: `object`
 
-Contains all name/value pairs of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
+Contains the name/value pairs of the HTTP [`Cookie`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie) header, which is useful for keeping track of state across requests, e.g. to keep a user logged in.
 
 #### request.url
 
@@ -533,9 +547,9 @@ const handler = (request, h) => {
 };
 ```
 
-#### response.created(url)
+#### response.created(url?)
 
-Sets the response status to [`201 Created`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`.
+Sets the response status to [`201 Created`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201) and sets the [`Location`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location) header to the value of `url`, if provided.
 
 Returns the response so other methods can be chained.
 
@@ -577,7 +591,7 @@ Also causes some new response methods to become available for customizing the re
 
 Returns the response so other methods can be chained.
 
-#### response.rewritable(isRewritable)
+#### response.rewritable(isRewritable?)
 
 *Only available after calling the `response.redirect()` method.*
 
@@ -601,7 +615,7 @@ response.state({ name : 'color', value : 'blue' });
 
 #### response.status
 
-Type: `number`<br>
+Type: `number`\
 Example: [`418`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)
 
 The [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) that will be sent in the response. Defaults to [`200`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200), which means the request succeeded. 4xx and 5xx codes indicate an error.
@@ -640,7 +654,7 @@ Creates a new response with a redirect status. Shortcut for `h.response().redire
 
 Returns the response so other methods can be chained.
 
-#### h.response(body)
+#### h.response(body?)
 
 Creates a new response with an optional [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2). This is the same as returning the body directly from the route handler, but it is useful in order to begin a chain with other response methods.
 
@@ -652,7 +666,7 @@ Documentation: [Routing](./docs/routing.md)
 
 A router is used to store and lookup routes. The server has a built-in router at [`server.router`](#serverrouter), which it uses to match an incoming request to a route handler function that generates a response. You can use the server's router directly or you can create a custom router with `pogo.router()`.
 
-To copy routes from one router to another, see [`router.add()`](#routeraddroute). You can pass a custom router to `server.route()` or `server.router.add()` to copy its routes into the server's built-in router, thus making those routes available to incoming requests.
+To copy routes from one router to another, see [`router.add()`](#routeraddroute-options-handler). You can pass a custom router to `server.route()` or `server.router.add()` to copy its routes into the server's built-in router, thus making those routes available to incoming requests.
 
 Note that you don't necessarily need to create a custom router. You only need to create your own router if you prefer the chaining syntax for defining routes and you want to export the routes from a file that doesn't have access to the server. In other words, a custom router is useful for larger applications.
 
@@ -680,9 +694,7 @@ const server = pogo.server();
 server.route(router);
 ```
 
-#### router.add(route)
-#### router.add(route, options)
-#### router.add(route, options, handler)
+#### router.add(route, options?, handler?)
 
 Adds one or more routes to the routing table, which makes them available for lookup, e.g. by a server trying to match an incoming request to a handler function.
 
@@ -707,9 +719,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().add('/', { method : '*' }, () => 'Hello, World!');
 ```
 
-#### router.all(route)
+#### router.all(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with `'*'` as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with `'*'` as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -717,9 +729,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().all('/', () => 'Hello, World!');
 ```
 
-#### router.delete(route)
+#### router.delete(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with [`'DELETE'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE) as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with [`'DELETE'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -727,9 +739,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().delete('/', () => 'Hello, World!');
 ```
 
-#### router.get(route)
+#### router.get(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with [`'GET'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with [`'GET'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -743,9 +755,9 @@ Look up a route that matches the given `method` and `path`.
 
 Returns the route object with an additional `params` property that contains path parameter names and values.
 
-#### router.patch(route)
+#### router.patch(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with [`'PATCH'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH) as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with [`'PATCH'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -753,9 +765,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().patch('/', () => 'Hello, World!');
 ```
 
-#### router.post(route)
+#### router.post(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with [`'POST'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with [`'POST'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
@@ -763,9 +775,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().post('/', () => 'Hello, World!');
 ```
 
-#### router.put(route)
+#### router.put(route, options?, handler?)
 
-Shortcut for [`router.add()`](#routeraddroute), with [`'PUT'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT) as the default HTTP method.
+Shortcut for [`router.add()`](#routeraddroute-options-handler), with [`'PUT'`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT) as the default HTTP method.
 
 Returns the router so other methods can be chained.
 
