@@ -35,20 +35,17 @@ export default class Server {
             ...options
         };
         this.router = new Router();
-        if (options && options.catchAll) {
-            this.router.all("/{___catchAll*}", options.catchAll);
+        const { catchAll } = this.options;
+        if (typeof catchAll === 'function') {
+            this.router.all('/{catchAll*}', catchAll);
         }
     }
     async inject(rawRequest: http.ServerRequest): Promise<Response> {
         const route = this.router.lookup(rawRequest.method, getPathname(rawRequest.url));
 
-        const customCatchAll = this._config.catchAll;
-        if (!route && !customCatchAll) {
+        if (!route) {
             return serialize(bang.notFound());
         }
-
-        // At least one of foundRoute and catchAll is obtained
-        const handler = (route ? route.handler : customCatchAll) as RouteHandler;
 
         const request = new Request({
             raw    : rawRequest,
@@ -57,7 +54,7 @@ export default class Server {
         });
 
         try {
-            return serialize(await handler(request, new Toolkit()));
+            return serialize(await route.handler(request, new Toolkit()));
         }
         catch (error) {
             return serialize(bang.Bang.wrap(error));
