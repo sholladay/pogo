@@ -1,4 +1,4 @@
-import { assertStrictEq } from '../dev-dependencies.ts';
+import { assertEquals, assertStrictEq } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -83,4 +83,22 @@ test('h.redirect()', async () => {
     assertStrictEq(responseFour.headers.get('content-type'), null);
     assertStrictEq(responseFour.headers.get('location'), '/four');
     assertStrictEq(responseFour.body, '');
+});
+
+test('h.file()', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/names',
+        handler(request, h) {
+            return h.file('./test/fixture/names.json');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/names'
+    });
+    assertStrictEq(response.status, 200);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
 });
