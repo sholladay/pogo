@@ -1,4 +1,4 @@
-import React from 'https://dev.jspm.io/react@16.12.0';
+import React from 'https://cdn.pika.dev/react@16.12.0';
 import ReactDOMServer from 'https://dev.jspm.io/react-dom@16.12.0/server';
 import * as cookie from 'https://deno.land/std@v0.56.0/http/cookie.ts';
 import * as http from 'https://deno.land/std@v0.56.0/http/server.ts';
