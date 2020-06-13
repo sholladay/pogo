@@ -348,7 +348,7 @@ class Router {
             params : route.segments.reduce((params: RequestParams, routeSegment: string, index: number) => {
                 if (isDynamicSegment(routeSegment)) {
                     const name = getParamName(routeSegment);
-                    params[name] = pathSegments[index];
+                    params[name] = routeSegment.endsWith('*}') ? pathSegments.slice(index).join('/') : pathSegments[index];
                 }
                 return params;
             }, {})

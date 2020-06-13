@@ -636,4 +636,22 @@ test('router.lookup() catch-all', () => {
         segments : ['', '{any*}'],
         xyz      : 123
     });
+    assertEquals(router.lookup('GET', '/foo/'), {
+        method : '*',
+        params : {
+            any : 'foo/'
+        },
+        path     : '/{any*}',
+        segments : ['', '{any*}'],
+        xyz      : 123
+    });
+    assertEquals(router.lookup('GET', '/foo/bar'), {
+        method : '*',
+        params : {
+            any : 'foo/bar'
+        },
+        path     : '/{any*}',
+        segments : ['', '{any*}'],
+        xyz      : 123
+    });
 });
