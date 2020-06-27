@@ -102,3 +102,25 @@ test('h.file()', async () => {
     assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
 });
+
+test('h.file() outside default confine', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/forbid',
+        handler(request, h) {
+            return h.file('/etc/hosts');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/forbid'
+    });
+    assertStrictEq(response.status, 403);
+    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, JSON.stringify({
+        error   : 'Forbidden',
+        message : 'Forbidden',
+        status  : 403
+    }));
+});
