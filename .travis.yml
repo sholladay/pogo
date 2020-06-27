@@ -5,4 +5,4 @@ install:
   - export PATH="$HOME/.deno/bin:$PATH"
 
 script:
-  - deno test --allow-read='.' test/*
+  - deno test --allow-read test/*
