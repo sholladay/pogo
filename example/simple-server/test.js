@@ -1,7 +1,7 @@
 import { assertStrictEq } from './dev-dependencies.ts';
 import server from './main.ts';
 
-const { runTests, test } = Deno;
+const { test } = Deno;
 
 test('GET /', async () => {
     const response = await server.inject({
@@ -10,7 +10,5 @@ test('GET /', async () => {
     });
     assertStrictEq(response.status, 200);
     assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.body, 'hi');
+    assertStrictEq(response.body, 'Hello, world!');
 });
-
-await runTests();
