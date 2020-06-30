@@ -173,6 +173,7 @@ const response = await server.inject({
    - [`response.type(mediaType)`](#responsetypemediatype)
    - [`response.unstate(name)`](#responseunstatename)
  - [Response Toolkit](#response-toolkit)
+   - [`h.file(path, options?)`](#hfilepath-options)
    - [`h.redirect(url)`](#hredirecturl)
    - [`h.response(body?)`](#hresponsebody)
  - [Router](#router)
@@ -647,6 +648,29 @@ Returns the response so other methods can be chained.
 The response toolkit is an object that is passed to route handlers, with utility methods that make it easy to modify the response. For example, you can use it to set headers or a status code.
 
 By convention, this object is assigned to a variable named `h` in code examples.
+
+#### h.file(path, options?)
+
+Creates a new response with a body containing the contents of the file specified by `path`. Automatically sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header based on the file extension.
+
+Returns a `Promise` for the response.
+
+```js
+server.router.get('/', (request, h) => {
+    return h.file('./index.html');
+});
+```
+
+##### options
+
+Type: `object`
+
+###### confine
+
+Type: `boolean` | `string`\
+Default: [`Deno.cwd()`](https://doc.deno.land/https/github.com/denoland/deno/releases/latest/download/lib.deno.d.ts#Deno.cwd) (current working directory)
+
+Optional directory path used to limit which files are allowed to be accessed, which is important in case the file path comes from an untrusted source, such as the request URL. Any file inside of the `confine` directory will be accessible, but attempting to access any file outside of the `confine` directory will throw a [`403 Forbidden`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403) error. Set to `false` to disable this security feature.
 
 #### h.redirect(url)
 
