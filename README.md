@@ -25,7 +25,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 ## Usage
 
-Save the code below to a file named `server.js` and run it with a command like `deno --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
+Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
 
 ```js
 import pogo from 'https://deno.land/x/pogo/main.ts';
@@ -79,14 +79,35 @@ server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 
 ### Serve static files
 
-You can use [`Deno.readFile()`](https://deno.land/typedoc/index.html#readfile) to serve the contents of a file from the filesystem.
+#### Using `h.file()` (recommended)
 
-*Note that currently you should specify the content type of the file using `response.type()`. Future versions of Pogo will provide more egornomic APIs for static files that handle this automatically.*
+You can use [`h.file()`](#hfilepath-options) to send a file. It will read the file, wrap the contents in a [`Response`](#response), and automatically set the correct [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header. It also has a security feature that prevents path traversal attacks, so it is safe to set the path dynamically (e.g. based on the request URL).
+
+```js
+server.router.get('/', (request, h) => {
+    return h.file('./foo.jpg');
+});
+```
+
+#### Using byte arrays, streams, etc.
+
+If you need more control over how the file is read, there are also more low level ways to send a file, as shown below. However, you'll need to set the content type manually. Also, be sure to not set the path based on an untrusted source, otherwise you may create a path traversal vulnerability. As always, but especially when using any of these low level approaches, we strongly recommend setting Deno's read permission to a particular file or directory, e.g. `--allow-read='.'`, to limit the risk of such attacks.
+
+Using `Deno.readFile()` to get the data as an array of bytes:
 
 ```js
 server.router.get('/', async (request, h) => {
-    const buffer = await Deno.readFile('./hello.jpg');
+    const buffer = await Deno.readFile('./foo.jpg');
     return h.response(buffer).type('image/jpeg');
+});
+```
+
+Using `Deno.open()` to get the data as a stream to improve latency and memory usage:
+
+```js
+server.router.get('/', async (request, h) => {
+    const stream = await Deno.open('./foo.jpg');
+    return h.response(stream).type('image/jpeg');
 });
 ```
 
@@ -101,7 +122,7 @@ Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticM
 Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`. The type definitions should load automatically from the Pika CDN, but if you run into problems when using `.tsx`, try loading them manually (see [deno_types](https://github.com/Soremwar/deno_types)).
 
 ```jsx
-import React from 'https://cdn.pika.dev/react';
+import React from 'https://dev.jspm.io/react';
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
@@ -173,6 +194,7 @@ const response = await server.inject({
    - [`response.type(mediaType)`](#responsetypemediatype)
    - [`response.unstate(name)`](#responseunstatename)
  - [Response Toolkit](#response-toolkit)
+   - [`h.file(path, options?)`](#hfilepath-options)
    - [`h.redirect(url)`](#hredirecturl)
    - [`h.response(body?)`](#hresponsebody)
  - [Router](#router)
@@ -205,7 +227,7 @@ Type: `function`
 Optional route handler to be used as a fallback for requests that do not match any other route. This overrides the default 404 Not Found behavior built into the framework. Shortcut for `server.router.all('/{catchAll*}', catchAll)`.
 
 ```js
-pogo.server({
+const server = pogo.server({
     catchAll(request, h) {
         return h.response('the void').code(404);
     }
@@ -379,20 +401,25 @@ Type: [`Reader`](https://deno.land/typedoc/interfaces/deno.reader.html)
 
 The HTTP [body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body) value.
 
-You can read raw bytes from the body in chunks with `request.body.read()`, which takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `null` when the body is finished being read.
+To get the body as a string, pass it to [`Deno.readAll()`](https://doc.deno.land/https/github.com/denoland/deno/releases/latest/download/lib.deno.d.ts#Deno.readAll) and decode the result, as shown below. Note that doing so will cause the entire body to be read into memory all at once, which is convenient and fine in most cases, but may be inappropriate for requests with a very large body.
 
 ```js
-const decoder = new TextDecoder();
-const buffer = new Uint8Array(20);
-const numBytesRead = await request.body.read(buffer);
-const bodyText = decoder.decode(buffer.subarray(0, numBytesRead));
+server.router.post('/users', async (request) => {
+    const bodyText = new TextDecoder().decode(await Deno.readAll(request.body));
+    const user = JSON.parse(bodyText);
+    // ...
+});
 ```
 
-To get the body as a string, pass it to `Deno.readAll()` and decode the result, as shown below. Note that doing so will cause the entire body to be read into memory all at once, which is convenient, but may be inappropriate for requests with a very large body.
+If you want more control over how the stream is processed, instead of reading it all into memory, you can read raw bytes from the body in chunks with `request.body.read()`. It takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `null` when the body is finished being read. In the example below, we read up to a maximum of 20 bytes from the body.
 
 ```js
-const decoder = new TextDecoder();
-const bodyText = decoder.decode(await Deno.readAll(request.body));
+server.router.post('/data', (request) => {
+    const buffer = new Uint8Array(20);
+    const numBytesRead = await request.body.read(buffer);
+    const data = new TextDecoder().decode(buffer.subarray(0, numBytesRead));
+    // ...
+});
 ```
 
 #### request.headers
@@ -647,6 +674,29 @@ Returns the response so other methods can be chained.
 The response toolkit is an object that is passed to route handlers, with utility methods that make it easy to modify the response. For example, you can use it to set headers or a status code.
 
 By convention, this object is assigned to a variable named `h` in code examples.
+
+#### h.file(path, options?)
+
+Creates a new response with a body containing the contents of the file specified by `path`. Automatically sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header based on the file extension.
+
+Returns a `Promise` for the response.
+
+```js
+server.router.get('/', (request, h) => {
+    return h.file('./index.html');
+});
+```
+
+##### options
+
+Type: `object`
+
+###### confine
+
+Type: `boolean` | `string`\
+Default: [`Deno.cwd()`](https://doc.deno.land/https/github.com/denoland/deno/releases/latest/download/lib.deno.d.ts#Deno.cwd) (current working directory)
+
+Optional directory path used to limit which files are allowed to be accessed, which is important in case the file path comes from an untrusted source, such as the request URL. Any file inside of the `confine` directory will be accessible, but attempting to access any file outside of the `confine` directory will throw a [`403 Forbidden`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403) error. Set to `false` to disable this security feature.
 
 #### h.redirect(url)
 
