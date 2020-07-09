@@ -54,7 +54,7 @@ export default class Server {
         });
 
         try {
-            return serialize(await route.handler(request, new Toolkit()));
+            return serialize(await route.handler(request, new Toolkit(request)));
         }
         catch (error) {
             return serialize(bang.Bang.wrap(error));
