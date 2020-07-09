@@ -14,7 +14,7 @@ This is an example of a very basic application, similar to [Hello World](../hell
 The fastest way to run the example is to use its URL:
 
 ```sh
-deno -A https://deno.land/x/pogo/example/simple-server/run.ts
+deno run -A https://deno.land/x/pogo/example/simple-server/run.ts
 ```
 
 ### Local
@@ -23,5 +23,5 @@ Alternatively, if you want to play around with the example, run it from a local 
 
 ```sh
 curl -fsSL https://github.com/sholladay/pogo/archive/master.tar.gz | tar -xz --strip-components=1 'pogo-master/example'
-deno -A example/simple-server/run.ts
+deno run -A example/simple-server/run.ts
 ```
