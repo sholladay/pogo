@@ -7,7 +7,7 @@ import {
 import Response from './response.ts';
 import { ResponseBody } from './types.ts';
 
-const serialize = (source: Response | ResponseBody | Error): Response => {
+export const serialize = (source: Response | ResponseBody | Error): Response => {
     const response = Response.wrap(source);
 
     if (React.isValidElement(response.body)) {

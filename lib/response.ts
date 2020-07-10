@@ -2,17 +2,17 @@ import { cookie, status } from '../dependencies.ts';
 import { Bang } from './bang.ts';
 import { ResponseBody } from './types.ts';
 
-interface ResponseOptions {
+export interface ResponseOptions {
     body?: ResponseBody,
     headers?: HeadersInit,
     status?: number
 };
 
-interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
+export interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
     name?: cookie.Cookie['name']
 }
 
-export default class Response {
+export class Response {
     body: ResponseBody;
     headers: Headers;
     status: number;
@@ -99,3 +99,5 @@ export default class Response {
         return this;
     }
 }
+
+export default Response;

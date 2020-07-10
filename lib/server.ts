@@ -25,7 +25,7 @@ const getPathname = (path: string): string => {
     return new URL(path, 'about:blank').pathname;
 };
 
-export default class Server {
+export class Server {
     options: ServerOptions;
     raw?: http.Server;
     router: Router;
@@ -100,3 +100,5 @@ export default class Server {
         this.raw?.close();
     }
 }
+
+export default Server;

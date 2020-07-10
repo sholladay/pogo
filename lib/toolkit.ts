@@ -4,11 +4,11 @@ import { ResponseBody } from './types.ts';
 import isPathInside from './util/is-path-inside.ts';
 import { mime } from '../dependencies.ts';
 
-interface FileHandlerOptions {
+export interface FileHandlerOptions {
     confine: boolean | string
 }
 
-export default class Toolkit {
+export class Toolkit {
     async file(path: string, options?: FileHandlerOptions): Promise<Response> {
         if (options?.confine !== false) {
             const confine = typeof options?.confine === 'string' ? options.confine : Deno.cwd();
@@ -32,3 +32,5 @@ export default class Toolkit {
         return this.response().redirect(url);
     }
 }
+
+export default Toolkit
