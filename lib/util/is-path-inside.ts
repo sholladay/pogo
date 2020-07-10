@@ -30,6 +30,6 @@ _isPathInside.fs = async (childPath: string, parentPath: string): Promise<boolea
     return isPathInside(realChildPath, realParentPath);
 };
 
-export const isPathInside = _isPathInside
+export const isPathInside = _isPathInside;
 
 export default isPathInside;

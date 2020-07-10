@@ -33,4 +33,4 @@ export class Toolkit {
     }
 }
 
-export default Toolkit
+export default Toolkit;
