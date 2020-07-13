@@ -1,16 +1,19 @@
-export * as util from './lib/util/mod.ts';
+import Router, { RoutesList } from './lib/router.ts';
+import Server from './lib/server.ts';
+import { RouteOptions, RouteHandler, ServerOptions } from './lib/types.ts';
 
-export * as bang from './lib/bang.ts';
-export * as request from './lib/request.ts';
-export * as response from './lib/response.ts';
-export * as router from './lib/router.ts';
-export * as serialize from './lib/serialize.ts';
-export * as server from './lib/server.ts';
-export * as toolkit from './lib/toolkit.ts';
-export * as types from './lib/types.ts';
+export * as types from './lib/types.ts'
 
-import _main from './lib/mod.ts';
+export { default as Router } from './lib/router.ts';
+export { default as Server } from './lib/server.ts';
 
-export const Main = _main;
+export const Main = {
+    server(options: ServerOptions): Server {
+        return new Server(options);
+    },
+    router(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): Router {
+        return new Router(route, options, handler);
+    }
+};
 
 export default Main;

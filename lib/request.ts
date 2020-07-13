@@ -3,13 +3,13 @@ import Response from './response.ts';
 import Server from './server.ts';
 import { RequestParams, MatchedRoute } from './types.ts';
 
-export interface RequestOptions {
+interface RequestOptions {
     raw: http.ServerRequest,
     route: MatchedRoute,
     server: Server
 }
 
-export class Request {
+export default class Request {
     raw: http.ServerRequest;
     route: MatchedRoute;
     method: string;
@@ -57,5 +57,3 @@ export class Request {
         return this.url.searchParams;
     }
 }
-
-export default Request;

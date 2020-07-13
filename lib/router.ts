@@ -118,14 +118,14 @@ const sortRoutes = (left: NormalizedRoute, right: NormalizedRoute): number => {
     return unchanged;
 };
 
-export interface RoutingTable {
+interface RoutingTable {
     conflictIds: Map<string, NormalizedRoute>,
     list: Array<NormalizedRoute>,
     pathfinders: Map<string, Array<NormalizedRoute>>,
     wildcards: Array<NormalizedRoute>
 }
 
-export class Router {
+export default class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         this.routes = {
@@ -355,5 +355,3 @@ export class Router {
         };
     }
 }
-
-export default Router;

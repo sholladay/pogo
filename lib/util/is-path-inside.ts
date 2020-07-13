@@ -12,7 +12,7 @@ const realPathSilent = async (filePath: string): Promise<string> => {
     }
 };
 
-const _isPathInside = (childPath: string, parentPath: string): boolean => {
+const isPathInside = (childPath: string, parentPath: string): boolean => {
     const relation = path.relative(parentPath, childPath);
     return Boolean(
         relation &&
@@ -22,14 +22,12 @@ const _isPathInside = (childPath: string, parentPath: string): boolean => {
     );
 };
 
-_isPathInside.fs = async (childPath: string, parentPath: string): Promise<boolean> => {
+isPathInside.fs = async (childPath: string, parentPath: string): Promise<boolean> => {
     const [realChildPath, realParentPath] = await Promise.all([
         realPathSilent(childPath),
         realPathSilent(parentPath)
     ]);
     return isPathInside(realChildPath, realParentPath);
 };
-
-export const isPathInside = _isPathInside;
 
 export default isPathInside;

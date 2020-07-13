@@ -1,14 +1,10 @@
 import Response from './response.ts';
 import * as bang from './bang.ts';
-import { ResponseBody } from './types.ts';
+import { ToolkitInterface, FileHandlerOptions, ResponseBody } from './types.ts';
 import isPathInside from './util/is-path-inside.ts';
 import { mime } from '../dependencies.ts';
 
-export interface FileHandlerOptions {
-    confine: boolean | string
-}
-
-export class Toolkit {
+export default class Toolkit implements ToolkitInterface {
     async file(path: string, options?: FileHandlerOptions): Promise<Response> {
         if (options?.confine !== false) {
             const confine = typeof options?.confine === 'string' ? options.confine : Deno.cwd();
@@ -32,5 +28,3 @@ export class Toolkit {
         return this.response().redirect(url);
     }
 }
-
-export default Toolkit;
