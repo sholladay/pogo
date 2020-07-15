@@ -7,16 +7,16 @@ server.router.get('/', () => {
     return (
         <>
             <Post
-                title="my first post"
-                text="Don't know what to write."
-                authorName="dr.net"
+                title="My Second Post"
+                text="Let's talk about IOT devices..."
             />
             <Post
-                title="my second post"
-                text="Want to write about IOT devices."
+                title="My First Post"
+                text="Welcome to my blog..."
+                authorName="Jane Doe"
             />
         </>
-    )
+    );
 });
 
 export default server;
