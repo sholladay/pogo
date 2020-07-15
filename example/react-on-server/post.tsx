@@ -19,6 +19,6 @@ const Post = (props: PostProps) => {
             <p>{text}</p>
         </>
     );
-}
+};
 
 export default Post;
