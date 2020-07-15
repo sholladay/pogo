@@ -6,7 +6,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 [Documentation](./docs)
 
-*Supports Deno v1.0.0 and higher.*
+*Supports Deno v1.2.0 and higher.*
 
 ## Contents
 
