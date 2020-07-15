@@ -1,6 +1,8 @@
 # React On Server
 
-This is an example of using React on a server application, similar to [simple server](../simple-server), but with the following changes:
+This is an example Pogo app with React server-side rendering static HTML pages (i.e. webpage templating).
+
+Based on [simple server](../simple-server), but with the following changes:
  - Added JSX with React [`main.tsx`](./main.tsx).
  - Created and used React component [Post](./post.tsx) with passing props.
  - Used `interface` for type definition of component `props`.
