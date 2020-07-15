@@ -95,7 +95,7 @@ export default class Response {
         return this.header('Content-Type', mediaType);
     }
     unstate(name: string) {
-        cookie.delCookie(this as object, name);
+        cookie.deleteCookie(this as object, name);
         return this;
     }
 }
