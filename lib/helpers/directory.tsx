@@ -11,22 +11,23 @@ export interface DirectoryHandlerOptions {
 }
 
 const directory = async (dirPath: string, filePath?: string, options?: DirectoryHandlerOptions): Promise<Response> => {
-    const fp = path.join(dirPath, filePath ?? '.');
-    if (fp !== dirPath && !(await isPathInside.fs(fp, dirPath))) {
+    const joinedFilePath = path.join(dirPath, filePath ?? '.');
+    const isDirPath = path.relative(dirPath, joinedFilePath) === '';
+    if (!isDirPath && !(await isPathInside.fs(joinedFilePath, dirPath))) {
         throw bang.forbidden();
     }
-    const status = await Deno.stat(fp);
+    const status = await Deno.stat(joinedFilePath);
     if (status.isFile) {
-        return file(fp, { confine : dirPath });
+        return file(joinedFilePath, { confine : dirPath });
     }
     if (!options?.listing) {
         throw bang.forbidden();
     }
-    const files = await readDirStats(fp);
+    const files = await readDirStats(joinedFilePath);
     files.sort((left, right) => {
         return left.name.localeCompare(right.name);
     });
-    return Response.wrap(<DirectoryListing basePath={path.relative(dirPath, fp)} files={files} />);
+    return Response.wrap(<DirectoryListing basePath={path.relative(dirPath, joinedFilePath)} files={files} />);
 };
 
 export default directory;
