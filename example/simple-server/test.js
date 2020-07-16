@@ -1,4 +1,4 @@
-import { assertStrictEq } from './dev-dependencies.ts';
+import { assertStrictEquals } from './dev-dependencies.ts';
 import server from './main.ts';
 
 const { test } = Deno;
@@ -8,7 +8,7 @@ test('GET /', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.body, 'Hello, world!');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.body, 'Hello, world!');
 });
