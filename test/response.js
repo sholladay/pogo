@@ -1,4 +1,4 @@
-import { assertStrictEq } from '../dev-dependencies.ts';
+import { assertStrictEquals } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -16,9 +16,9 @@ test('response.code() set status code', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 418);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.body, 'hi');
+    assertStrictEquals(response.status, 418);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.body, 'hi');
 });
 
 test('response.created() set status and location', async () => {
@@ -45,14 +45,14 @@ test('response.created() set status and location', async () => {
         method : 'GET',
         url    : '/with-location'
     });
-    assertStrictEq(responseNoLocation.status, 201);
-    assertStrictEq(responseNoLocation.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(responseNoLocation.headers.has('location'), false);
-    assertStrictEq(responseNoLocation.body, 'one');
-    assertStrictEq(responseWithLocation.status, 201);
-    assertStrictEq(responseWithLocation.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(responseWithLocation.headers.get('location'), '/yay');
-    assertStrictEq(responseWithLocation.body, 'two');
+    assertStrictEquals(responseNoLocation.status, 201);
+    assertStrictEquals(responseNoLocation.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(responseNoLocation.headers.has('location'), false);
+    assertStrictEquals(responseNoLocation.body, 'one');
+    assertStrictEquals(responseWithLocation.status, 201);
+    assertStrictEquals(responseWithLocation.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(responseWithLocation.headers.get('location'), '/yay');
+    assertStrictEquals(responseWithLocation.body, 'two');
 });
 
 test('response.header() set custom header', async () => {
@@ -68,10 +68,10 @@ test('response.header() set custom header', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.headers.get('x-dog'), 'woof');
-    assertStrictEq(response.body, 'hi');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('x-dog'), 'woof');
+    assertStrictEquals(response.body, 'hi');
 });
 
 test('response.location() set location header', async () => {
@@ -87,10 +87,10 @@ test('response.location() set location header', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.headers.get('location'), '/over-the-rainbow');
-    assertStrictEq(response.body, 'hi');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('location'), '/over-the-rainbow');
+    assertStrictEquals(response.body, 'hi');
 });
 
 test('response.state() set cookie', async () => {
@@ -106,10 +106,10 @@ test('response.state() set cookie', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.headers.get('set-cookie'), 'sesh=nomnomnom; Secure; HttpOnly; SameSite=Strict');
-    assertStrictEq(response.body, '');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('set-cookie'), 'sesh=nomnomnom; Secure; HttpOnly; SameSite=Strict');
+    assertStrictEquals(response.body, '');
 });
 
 test('response.type() override default content-type handling', async () => {
@@ -125,9 +125,9 @@ test('response.type() override default content-type handling', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'weird/type');
-    assertStrictEq(response.body, JSON.stringify({ hello : 'world' }));
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'weird/type');
+    assertStrictEquals(response.body, JSON.stringify({ hello : 'world' }));
 });
 
 test('response.unstate() clear cookie', async () => {
@@ -143,8 +143,8 @@ test('response.unstate() clear cookie', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEq(response.headers.get('set-cookie'), 'mwahaha=; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-    assertStrictEq(response.body, '');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('set-cookie'), 'mwahaha=; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+    assertStrictEquals(response.body, '');
 });

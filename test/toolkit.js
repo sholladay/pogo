@@ -1,4 +1,4 @@
-import { assertEquals, assertStrictEq } from '../dev-dependencies.ts';
+import { assertEquals, assertStrictEquals } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -16,9 +16,9 @@ test('h.response() set JSON body', async () => {
         method : 'GET',
         url    : '/'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEq(response.body, JSON.stringify({ hello : 'world' }));
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertStrictEquals(response.body, JSON.stringify({ hello : 'world' }));
 });
 
 test('h.redirect()', async () => {
@@ -67,22 +67,22 @@ test('h.redirect()', async () => {
         method : 'GET',
         url    : '/permanent-no-rewrite'
     });
-    assertStrictEq(responseOne.status, 302);
-    assertStrictEq(responseOne.headers.get('content-type'), null);
-    assertStrictEq(responseOne.headers.get('location'), '/one');
-    assertStrictEq(responseOne.body, '');
-    assertStrictEq(responseTwo.status, 307);
-    assertStrictEq(responseTwo.headers.get('content-type'), null);
-    assertStrictEq(responseTwo.headers.get('location'), '/two');
-    assertStrictEq(responseTwo.body, '');
-    assertStrictEq(responseThree.status, 301);
-    assertStrictEq(responseThree.headers.get('content-type'), null);
-    assertStrictEq(responseThree.headers.get('location'), '/three');
-    assertStrictEq(responseThree.body, '');
-    assertStrictEq(responseFour.status, 308);
-    assertStrictEq(responseFour.headers.get('content-type'), null);
-    assertStrictEq(responseFour.headers.get('location'), '/four');
-    assertStrictEq(responseFour.body, '');
+    assertStrictEquals(responseOne.status, 302);
+    assertStrictEquals(responseOne.headers.get('content-type'), null);
+    assertStrictEquals(responseOne.headers.get('location'), '/one');
+    assertStrictEquals(responseOne.body, '');
+    assertStrictEquals(responseTwo.status, 307);
+    assertStrictEquals(responseTwo.headers.get('content-type'), null);
+    assertStrictEquals(responseTwo.headers.get('location'), '/two');
+    assertStrictEquals(responseTwo.body, '');
+    assertStrictEquals(responseThree.status, 301);
+    assertStrictEquals(responseThree.headers.get('content-type'), null);
+    assertStrictEquals(responseThree.headers.get('location'), '/three');
+    assertStrictEquals(responseThree.body, '');
+    assertStrictEquals(responseFour.status, 308);
+    assertStrictEquals(responseFour.headers.get('content-type'), null);
+    assertStrictEquals(responseFour.headers.get('location'), '/four');
+    assertStrictEquals(responseFour.body, '');
 });
 
 test('h.file()', async () => {
@@ -98,8 +98,8 @@ test('h.file()', async () => {
         method : 'GET',
         url    : '/names'
     });
-    assertStrictEq(response.status, 200);
-    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
 });
 
@@ -116,8 +116,8 @@ test('h.file() outside default confine', async () => {
         method : 'GET',
         url    : '/forbid'
     });
-    assertStrictEq(response.status, 403);
-    assertStrictEq(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertStrictEquals(response.status, 403);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
     assertEquals(response.body, JSON.stringify({
         error   : 'Forbidden',
         message : 'Forbidden',
