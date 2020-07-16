@@ -1,6 +1,8 @@
-# React On Server
+# React on Client
 
-This is an example of using React on a server application, similar to [react on server](../react-on-server), but with the following changes:
+This is an example Pogo app with React client-side rendering.
+
+Based on [React on Server](../react-on-server), but with the following changes:
  - Added client rendering on browser [`app.jsx`](./client/app.jsx).
  - Used browser features with `React.useState` [`counter.jsx`](./client/counter.jsx).
  - Added build step for client [`bundle.sh`](./bundle.sh).
