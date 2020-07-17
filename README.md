@@ -6,7 +6,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 [Documentation](./docs)
 
-*Supports Deno v1.0.0 and higher.*
+*Supports Deno v1.2.0 and higher.*
 
 ## Contents
 
@@ -25,7 +25,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 ## Usage
 
-Save the code below to a file named `server.js` and run it with a command like `deno --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
+Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
 
 ```js
 import pogo from 'https://deno.land/x/pogo/main.ts';
