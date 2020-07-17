@@ -1,4 +1,4 @@
-import { assertEquals, assertStrictEquals } from '../dev-dependencies.ts';
+import { assertEquals, assertStrictEquals, assertStringContains } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -123,4 +123,82 @@ test('h.file() outside default confine', async () => {
         message : 'Forbidden',
         status  : 403
     }));
+});
+
+test('h.directory() serve files', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/dirtest/{file*}',
+        handler(request, h) {
+            return h.directory('./test/fixture');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/dirtest/names.json'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
+});
+
+test('h.directory() forbids listing by default', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/dirtest/{file?}',
+        handler(request, h) {
+            return h.directory('./test/fixture');
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/dirtest/'
+    });
+    assertStrictEquals(response.status, 403);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertEquals(response.body, JSON.stringify({
+        error   : 'Forbidden',
+        message : 'Forbidden',
+        status  : 403
+    }));
+});
+
+test('h.directory() listing with relative path', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/dirtest/{file?}',
+        handler(request, h) {
+            return h.directory('./test/fixture', {listing: true});
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/dirtest/'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStringContains(response.body, '<html>');
+    assertStringContains(response.body, 'names.json');
+});
+
+test('h.directory() listing with partial relative path', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'GET',
+        path   : '/dirtest/{file?}',
+        handler(request, h) {
+            return h.directory('test/fixture', {listing: true});
+        }
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/dirtest/'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStringContains(response.body, '<html>');
+    assertStringContains(response.body, 'names.json');
 });

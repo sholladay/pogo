@@ -79,13 +79,23 @@ server.route({ method : '*', path : '/hi', handler : () => 'Hello!' });
 
 ### Serve static files
 
-#### Using `h.file()` (recommended)
+#### Using `h.directory()` (recommended)
 
-You can use [`h.file()`](#hfilepath-options) to send a file. It will read the file, wrap the contents in a [`Response`](#response), and automatically set the correct [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header. It also has a security feature that prevents path traversal attacks, so it is safe to set the path dynamically (e.g. based on the request URL).
+You can use [`h.directory()`](#hdirectorypath-options) to send any file within a directory based on the request path.
 
-```js
+```ts
+server.router.get('/movies/{file*}', (request, h) => {
+    return h.directory('movies');
+});
+```
+
+#### Using `h.file()`
+
+You can use [`h.file()`](#hfilepath-options) to send a specific file. It will read the file, wrap the contents in a [`Response`](#response), and automatically set the correct [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header. It also has a security feature that prevents path traversal attacks, so it is safe to set the path dynamically (e.g. based on the request URL).
+
+```ts
 server.router.get('/', (request, h) => {
-    return h.file('./foo.jpg');
+    return h.file('dogs.jpg');
 });
 ```
 
@@ -97,7 +107,7 @@ Using `Deno.readFile()` to get the data as an array of bytes:
 
 ```js
 server.router.get('/', async (request, h) => {
-    const buffer = await Deno.readFile('./foo.jpg');
+    const buffer = await Deno.readFile('./dogs.jpg');
     return h.response(buffer).type('image/jpeg');
 });
 ```
@@ -106,7 +116,7 @@ Using `Deno.open()` to get the data as a stream to improve latency and memory us
 
 ```js
 server.router.get('/', async (request, h) => {
-    const stream = await Deno.open('./foo.jpg');
+    const stream = await Deno.open('./dogs.jpg');
     return h.response(stream).type('image/jpeg');
 });
 ```
@@ -194,6 +204,7 @@ const response = await server.inject({
    - [`response.type(mediaType)`](#responsetypemediatype)
    - [`response.unstate(name)`](#responseunstatename)
  - [Response Toolkit](#response-toolkit)
+   - [`h.directory(path, options?)`](#hdirectorypath-options)
    - [`h.file(path, options?)`](#hfilepath-options)
    - [`h.redirect(url)`](#hredirecturl)
    - [`h.response(body?)`](#hresponsebody)
@@ -675,15 +686,53 @@ The response toolkit is an object that is passed to route handlers, with utility
 
 By convention, this object is assigned to a variable named `h` in code examples.
 
+#### h.directory(path, options?)
+
+Creates a new response with a body containing the contents of the directory or file specified by `path`.
+
+Returns a `Promise` for the response.
+
+```ts
+server.router.get('/movies/{file*}', (request, h) => {
+    return h.directory('movies');
+});
+```
+
+The directory or file that is served is determined by joining the path given to `h.directory()` with the value of the last path parameter of the route, if any. This allows you to control whether the directory root or files within it will be accessible, by using a particular type of path parameter or lack thereof.
+
+ - A route with `path: '/movies'` will only serve the directory itself, meaning it will only work if the `listing` option is enabled (or if the path given to `h.directory()` is actually a file instead of a directory), otherwise a `403 Forbidden` error will be thrown.
+ - A route with `path: '/movies/{file}'` will only serve the directory's children, meaning that a request to `/movies/` will return a `404 Not Found`, even if the `listing` option is enabled.
+ - A route with `path: '/movies/{file?}'` will serve the directory itself and the directory's children, but not any of the directory's grandchildren or deeper descendants.
+ - A route with `path: '/movies/{file*}'` will serve the directory itself and any of the directory's descendants, including children and granchildren.
+
+Note that the name of the path parameter (`file` in the example above) does not matter, it can be anything, and the name itself won't affect the directory helper or the response in any way. You should consider it a form of documentation and choose a name that is appropriate and intuitive for your use case. By convention, we usually name it `file`.
+
+##### options
+
+Type: `object`
+
+###### listing
+
+Type: `boolean`\
+Default: `false`
+
+If `true`, enables directory listings, so that when the request path matches a directory (as opposed to a file), the response will be an HTML page that shows some info about the directory's children. including file names, file sizes, and timestamps for when the files were created and modified.
+
+By default, directory listings are disabled for improved privacy, and instead a `403 Forbidden` error will be thrown when the request matches a directory.
+
+Note that this option does not affect which files within the directory are accessible. For example, with a route of `/movies/{file*}` and `listing: false`, the user could still access `/movies/secret.mov` if they knew (or were able to guess) that such a file exists. Conversely, with a route of `/movies` and `listing: true`, the user would be unable to access `/movies/secret.mov` or see its contents, but they could see that it exists in the directory listing.
+
+To control which files are accessible, you can change the route path parameter or use `h.file()` to serve specific files.
+
 #### h.file(path, options?)
 
 Creates a new response with a body containing the contents of the file specified by `path`. Automatically sets the [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header based on the file extension.
 
 Returns a `Promise` for the response.
 
-```js
+```ts
 server.router.get('/', (request, h) => {
-    return h.file('./index.html');
+    return h.file('index.html');
 });
 ```
 

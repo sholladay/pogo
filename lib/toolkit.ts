@@ -1,29 +1,21 @@
+import directory, { DirectoryHandlerOptions } from './helpers/directory.tsx';
+import file, { FileHandlerOptions } from './helpers/file.ts';
+import Request from './request.ts';
 import Response from './response.ts';
-import * as bang from './bang.ts';
 import { ResponseBody } from './types.ts';
-import isPathInside from './util/is-path-inside.ts';
-import { mime } from '../dependencies.ts';
-
-interface FileHandlerOptions {
-    confine: boolean | string
-}
 
 export default class Toolkit {
+    request: Request
+    constructor(request: Request) {
+        this.request = request;
+    }
     async file(path: string, options?: FileHandlerOptions): Promise<Response> {
-        if (options?.confine !== false) {
-            const confine = typeof options?.confine === 'string' ? options.confine : Deno.cwd();
-            if (!(await isPathInside.fs(path, confine))) {
-                throw bang.forbidden();
-            }
-        }
-        const file = await Deno.readFile(path);
-        const mediaType = mime.lookup(path);
-        const contentType = mime.contentType(mediaType || '');
-        const response = this.response(file);
-        if (contentType) {
-            response.type(contentType);
-        }
-        return response;
+        return file(path, options);
+    }
+    async directory(path: string, options?: DirectoryHandlerOptions): Promise<Response> {
+        const lastParamName = this.request.route.paramNames[this.request.route.paramNames.length - 1];
+        const filePath = this.request.params[lastParamName];
+        return directory(path, filePath, options);
     }
     response(body?: ResponseBody): Response {
         return new Response({ body });
