@@ -698,7 +698,7 @@ server.router.get('/movies/{file*}', (request, h) => {
 });
 ```
 
-The directory or file that is served is determined by joining the path given to `h.directory()` with the value of the last path paraeter of the route, if any. This allows you to control whether the directory root or files within it will be accessible, by using a particular type of path parameter or lack thereof.
+The directory or file that is served is determined by joining the path given to `h.directory()` with the value of the last path parameter of the route, if any. This allows you to control whether the directory root or files within it will be accessible, by using a particular type of path parameter or lack thereof.
 
  - A route with `path: '/movies'` will only serve the directory itself, meaning it will only work if the `listing` option is enabled (or if the path given to `h.directory()` is actually a file instead of a directory), otherwise a `403 Forbidden` error will be thrown.
  - A route with `path: '/movies/{file}'` will only serve the directory's children, meaning that a request to `/movies/` will return a `404 Not Found`, even if the `listing` option is enabled.
