@@ -6,7 +6,7 @@ interface ResponseOptions {
     body?: ResponseBody,
     headers?: HeadersInit,
     status?: number
-};
+}
 
 interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
     name?: cookie.Cookie['name']
