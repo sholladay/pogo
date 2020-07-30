@@ -27,6 +27,7 @@ export interface RouteOptions extends Omit<Partial<Route>, 'method' | 'path'> {
 }
 
 export interface NormalizedRoute extends Route {
+    paramNames: Array<string>,
     segments: Array<string>
 }
 
@@ -46,3 +47,6 @@ type JSONStringifyable = boolean | null | number | object | string;
 export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
 export type RouteHandlerResult = Response | ResponseBody | Error | Promise<Response | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
+
+export { FileHandlerOptions } from './helpers/file.ts';
+export { DirectoryHandlerOptions } from './helpers/directory.tsx';

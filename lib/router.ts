@@ -44,12 +44,8 @@ const expandPath = (path: string): Array<string> => {
     });
 };
 
-const isStaticPath = (path: string): boolean => {
-    return !path.includes('{');
-};
-
 const isDynamicSegment = (segment: string): boolean => {
-    return segment.startsWith('{') && segment.endsWith('}');
+    return segment.startsWith('{') && segment.endsWith('}') && paramPattern.test(segment);
 };
 
 const getParamName = (segment: string): string => {
@@ -66,12 +62,6 @@ const toPathfinder = (segments: Array<string>): string => {
 
 const toSignature = (route: NormalizedRoute): string => {
     return route.method + ' ' + (route.vhost || '') + route.path;
-};
-
-const isInfinitePath = (segments: Array<string>): boolean => {
-    return segments.some((segment) => {
-        return /\{\w+\*\}/u.test(segment);
-    });
 };
 
 const fingerprintPath = (path: string): string => {
@@ -196,8 +186,11 @@ export default class Router {
 
         const record: NormalizedRoute = {
             ...normalizedRoute,
-            method   : normalizedRoute.method.toUpperCase(),
-            segments : normalizedRoute.path.split('/')
+            method     : normalizedRoute.method.toUpperCase(),
+            paramNames : Array.from(normalizedRoute.path.matchAll(paramsPattern), (match) => {
+                return match[1];
+            }),
+            segments   : normalizedRoute.path.split('/'),
         };
 
         const conflictId = toConflictId(record);
@@ -210,7 +203,8 @@ export default class Router {
 
         this.routes.conflictIds.set(conflictId, record);
 
-        if (isInfinitePath(record.segments)) {
+        const hasWildcardParam = /\{\w+\*\}/u.test(record.path);
+        if (hasWildcardParam) {
             this.routes.wildcards.push(record);
             this.routes.wildcards.sort(sortRoutes);
         }
@@ -325,7 +319,8 @@ export default class Router {
                 if (!isHostMatch) {
                     return false;
                 }
-                if (isStaticPath(route.path)) {
+                // If there are no params, it's a static path
+                if (route.paramNames.length === 0) {
                     return route.path === path;
                 }
 
