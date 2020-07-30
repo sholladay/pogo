@@ -2,16 +2,6 @@ import Request from './request.ts';
 import Response from './response.ts';
 import Toolkit from './toolkit.ts';
 
-export interface ToolkitInterface {
-    file(path: string, options?: FileHandlerOptions): Promise<Response>
-    response(body?: ResponseBody): Response
-    redirect(url: string): Response
-}
-
-export interface FileHandlerOptions {
-    confine: boolean | string
-}
-
 export interface Route {
     method: string,
     path: string,
