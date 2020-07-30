@@ -13,6 +13,8 @@ export * as types from './lib/types.ts';
 export { default as Router } from './lib/router.ts';
 export { default as Server } from './lib/server.ts';
 export { default as Toolkit } from './lib/toolkit.ts';
+export { default as Request } from './lib/request.ts';
+export { default as Response } from './lib/response.ts';
 
 export const directory = (path: string, options?: DirectoryHandlerOptions): RouteHandler => {
     return (request, h) => {
