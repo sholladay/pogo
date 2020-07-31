@@ -115,7 +115,7 @@ interface RoutingTable {
     wildcards: Array<NormalizedRoute>
 }
 
-class Router {
+export default class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         this.routes = {
@@ -350,5 +350,3 @@ class Router {
         };
     }
 }
-
-export default Router;
