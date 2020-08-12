@@ -132,7 +132,7 @@ Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticM
 Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`. The type definitions should load automatically from the Pika CDN, but if you run into problems when using `.tsx`, try loading them manually (see [deno_types](https://github.com/Soremwar/deno_types)).
 
 ```tsx
-import React from 'https://dev.jspm.io/react';
+import React from 'https://cdn.pika.dev/react';
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });

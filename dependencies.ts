@@ -1,5 +1,4 @@
-// @deno-types="https://github.com/soremwar/deno_types/raw/4a5066025e84d2c5353d0f40a8869c65d7c82734/react/v16.13.1/react.d.ts"
-import React from 'https://jspm.dev/react@16.13.1';
+import React from 'https://cdn.pika.dev/react@16.13.1';
 // @deno-types="https://github.com/soremwar/deno_types/raw/4a5066025e84d2c5353d0f40a8869c65d7c82734/react-dom/v16.13.1/server.d.ts"
 import ReactDOMServer from 'https://jspm.dev/react-dom@16.13.1/server';
 import * as cookie from 'https://deno.land/std@v0.61.0/http/cookie.ts';
