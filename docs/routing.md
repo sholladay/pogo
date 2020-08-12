@@ -2,7 +2,7 @@
 
 Routing is how we can match a request to a particular handler function, which then determines how to respond. So, instead of responding to every request with a dog sound, for example, we can respond to _some_ requests with a cat sound.
 
-```js
+```ts
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
