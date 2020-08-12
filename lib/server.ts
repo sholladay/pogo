@@ -25,6 +25,10 @@ const getPathname = (path: string): string => {
     return new URL(path, 'about:blank').pathname;
 };
 
+/**
+ * A server represents your application and its ability to handle HTTP requests.
+ * Use `pogo.server()` to create a server instance.
+ */
 export default class Server {
     options: ServerOptions;
     raw?: http.Server;

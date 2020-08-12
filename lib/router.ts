@@ -115,6 +115,10 @@ interface RoutingTable {
     wildcards: Array<NormalizedRoute>
 }
 
+/**
+ * A router represents a collection of routes and determines which route will handle a given HTTP request.
+ * Use `pogo.router()` to create a router instance.
+ */
 export default class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {

@@ -4,6 +4,10 @@ import Request from './request.ts';
 import Response from './response.ts';
 import { ResponseBody } from './types.ts';
 
+/**
+ * A response toolkit contains various utility methods for creating responses.
+ * Pogo passes a toolkit instance as the second argument to route handlers.
+ */
 export default class Toolkit {
     request: Request
     constructor(request: Request) {

@@ -9,6 +9,10 @@ interface RequestOptions {
     server: Server
 }
 
+/**
+ * A request represents an incoming message that your server should respond to.
+ * Pogo passes a request instance as the first argument to route handlers.
+ */
 export default class Request {
     raw: http.ServerRequest;
     route: MatchedRoute;

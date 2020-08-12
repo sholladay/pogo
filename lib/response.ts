@@ -12,6 +12,10 @@ interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
     name?: cookie.Cookie['name']
 }
 
+/**
+ * A response represents an outgoing message that will be returned by your server for a corresponding request.
+ * Use `h.response()` to create a response instance.
+ */
 export default class Response {
     body: ResponseBody;
     headers: Headers;
