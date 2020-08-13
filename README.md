@@ -520,7 +520,8 @@ The response that will be sent for the request. To create a new response, see [`
 Type: `object`
 
 The route that is handling the request, as given to [`server.route()`](#serverrouteroute-options-handler), with the following additional properties:
- - `params` is an object with properties for each dynamic path parameter
+ - `paramNames` is an array of path parameter names
+ - `params` is an object with properties for each path parameter, where the key is the parameter name, and the value is the corresponding part of the request path
  - `segments` is an array of path parts, as in the values separated by `/` slashes in the route path
 
 #### request.search
