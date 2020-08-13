@@ -1,4 +1,4 @@
-# pogo [![Build status for Pogo](https://travis-ci.com/sholladay/pogo.svg?branch=master "Build Status")](https://travis-ci.com/sholladay/pogo "Builds")
+# pogo [![Build status for Pogo](https://travis-ci.com/sholladay/pogo.svg?branch=master "Build Status")](https://travis-ci.com/sholladay/pogo "Builds") [![TypeScript documentation for Pogo](https://doc.deno.land/badge.svg "TypeScript Docs")](https://doc.deno.land/https/deno.land/x/pogo/main.ts "TypeScript Docs")
 
 > Server framework for [Deno](https://github.com/denoland/deno)
 
