@@ -2,10 +2,11 @@
 
 This is an example Pogo app with React client-side rendering.
 
-Based on [Simple Server](../simple-server), but with the following changes:
- - Added client rendering on browser [`app.jsx`](./client/app.jsx).
- - Used browser features with `React.useState` [`counter.jsx`](./client/counter.jsx).
- - Added build step for client [`bundle.sh`](./bundle.sh).
+Based on [Simple Server](../simple-server), with the following changes:
+ - Added [`index.html`](./index.html), where the app will be rendered on the client
+ - Added a [`client`](./client) directory with frontend modules such as [`client/app.jsx`](./client/app.jsx)
+ - Added [`client/counter.jsx`](./client/counter.jsx), a counter component that uses `React.useState`
+ - Added [`bundle.sh`](./bundle.sh), a build script for the frontend app
 
 ## Run the example
 
