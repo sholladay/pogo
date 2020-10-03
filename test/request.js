@@ -1,4 +1,4 @@
-import { assertStrictEquals } from '../dev-dependencies.ts';
+import { assertStrictEquals, StringReader } from '../dev-dependencies.ts';
 import Response from '../lib/response.ts';
 import Server from '../lib/server.ts';
 import pogo from '../main.ts';
@@ -443,9 +443,7 @@ test('request.state is an object with cookies', async () => {
     assertStrictEquals(response.body, JSON.stringify({
         science : 'rocket',
         type    : 'object',
-        value   : {
-            science : 'rocket'
-        }
+        value   : { science : 'rocket' }
     }));
 });
 
@@ -474,5 +472,33 @@ test('request.url is a URL instance', async () => {
         href          : 'http://localhost/',
         isUrlInstance : true,
         type          : 'object'
+    }));
+});
+
+test('JSON body is parsed when Content-Type header is application/json', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'POST',
+        path   : '/',
+        handler(request) {
+            return {
+                science : request.payload.science,
+                type    : typeof request.payload,
+                value   : request.payload
+            };
+        }
+    });
+    const response = await server.inject({
+        body    : new StringReader(JSON.stringify({ science : 'rocket' })),
+        headers : new Headers({ 'content-type' : 'application/json' }),
+        method  : 'POST',
+        url     : '/'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertStrictEquals(response.body, JSON.stringify({
+        science : 'rocket',
+        type    : 'object',
+        value   : { science : 'rocket' }
     }));
 });
