@@ -45,16 +45,25 @@ export default class Server {
         }
     }
     async inject(rawRequest: http.ServerRequest): Promise<Response> {
-        const route = this.router.lookup(rawRequest.method, getPathname(rawRequest.url));
+        const { url, method, body, headers = new Headers() }  = rawRequest;
+        const route = this.router.lookup(method, getPathname(url));
 
         if (!route) {
             return serialize(bang.notFound());
         }
+        let payload;
+        if (body && headers.get('content-type') === 'application/json') {
+            const parsedRequest = await Deno.readAll(body);
+            const decodedBody = new TextDecoder().decode(parsedRequest);
+            payload = JSON.parse(decodedBody);
+        }
+
 
         const request = new Request({
             raw    : rawRequest,
             route,
-            server : this
+            server : this,
+            payload
         });
 
         try {
