@@ -33,7 +33,7 @@ export interface ServerOptions {
     port: number
 }
 
-type JSONStringifyable = boolean | null | number | object | string;
+export type JSONStringifyable = boolean | null | number | object | string;
 export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
 export type RouteHandlerResult = Response | ResponseBody | Error | Promise<Response | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;

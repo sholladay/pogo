@@ -1,13 +1,16 @@
 import { cookie, http } from '../dependencies.ts';
 import Response from './response.ts';
 import Server from './server.ts';
-import { RequestParams, MatchedRoute } from './types.ts';
+import { RequestParams, MatchedRoute, JSONStringifyable } from './types.ts';
 
 interface RequestOptions {
     raw: http.ServerRequest,
     route: MatchedRoute,
-    server: Server
+    server: Server,
+    payload?: JSONStringifyable
 }
+
+type Payload = JSONStringifyable | undefined;
 
 /**
  * A request represents an incoming message that your server should respond to.
@@ -19,6 +22,7 @@ export default class Request {
     method: string;
     headers: Headers;
     params: RequestParams;
+    payload: Payload;
     referrer: string;
     response: Response;
     server: Server;
@@ -30,6 +34,7 @@ export default class Request {
         this.method = this.raw.method;
         this.headers = this.raw.headers || new Headers({ host : 'localhost' });
         this.params = this.route.params;
+        this.payload = options.payload;
         this.referrer = this.headers.get('referer') || '';
         this.response = new Response();
         this.server = options.server;

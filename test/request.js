@@ -502,3 +502,27 @@ test('JSON body is parsed when Content-Type header is application/json', async (
         value   : { science : 'rocket' }
     }));
 });
+
+test('request.payload is undefined when Content-Type header is not application/json but but body sent', async () => {
+    const server = pogo.server();
+    server.route({
+        method : 'POST',
+        path   : '/',
+        handler(request) {
+            return {
+                type    : typeof request.payload
+            };
+        }
+    });
+    const response = await server.inject({
+        body    : new StringReader(JSON.stringify({ science : 'rocket' })),
+        headers : new Headers(),
+        method  : 'POST',
+        url     : '/'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assertStrictEquals(response.body, JSON.stringify({
+        type    : 'undefined'
+    }));
+});
