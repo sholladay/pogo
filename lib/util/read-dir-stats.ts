@@ -20,6 +20,6 @@ const readDirStats = async (dir: string): Promise<Array<NamedStat>> => {
 };
 
 export default readDirStats;
-export {
+export type {
     NamedStat
 };
