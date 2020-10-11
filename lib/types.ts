@@ -38,5 +38,5 @@ export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
 export type RouteHandlerResult = Response | ResponseBody | Error | Promise<Response | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
 
-export { FileHandlerOptions } from './helpers/file.ts';
-export { DirectoryHandlerOptions } from './helpers/directory.tsx';
+export type { FileHandlerOptions } from './helpers/file.ts';
+export type { DirectoryHandlerOptions } from './helpers/directory.tsx';
