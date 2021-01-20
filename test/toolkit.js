@@ -1,4 +1,4 @@
-import { assertEquals, assertStrictEquals, assertStringContains } from '../dev-dependencies.ts';
+import { assertEquals, assertStrictEquals, assertStringIncludes } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -180,8 +180,8 @@ test('h.directory() listing with relative path', async () => {
     });
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStringContains(response.body, '<html>');
-    assertStringContains(response.body, 'names.json');
+    assertStringIncludes(response.body, '<html>');
+    assertStringIncludes(response.body, 'names.json');
 });
 
 test('h.directory() listing with partial relative path', async () => {
@@ -199,6 +199,6 @@ test('h.directory() listing with partial relative path', async () => {
     });
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStringContains(response.body, '<html>');
-    assertStringContains(response.body, 'names.json');
+    assertStringIncludes(response.body, '<html>');
+    assertStringIncludes(response.body, 'names.json');
 });
