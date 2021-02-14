@@ -22,7 +22,7 @@ export default class Request {
     referrer: string;
     response: Response;
     server: Server;
-    state: cookie.Cookies;
+    state: Record<string, string>;
     url: URL;
     constructor(options: RequestOptions) {
         this.raw = options.raw;
