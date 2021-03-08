@@ -146,16 +146,30 @@ server.start();
 
 ### Writing tests
 
-When it comes time to write tests for your app, Pogo has you covered with [`server.inject()`](serverinjectrequest).
+Pogo is designed to make testing easy. When you write tests for your app, you will probably want to test your server and route handlers in some way. Pogo encourages [pure](https://en.wikipedia.org/wiki/Pure_function) functional route handlers, enabling them to be tested in isolation from each other and even independently of Pogo itself, with little to no mocking required.
 
-By injecting a request into the server directly, we can completely avoid the need to listen on an available port, make HTTP connections, and all of the problems and complexity that come along with that. You should focus on writing your application logic and `server.inject()` makes that easier.
+If you want to go further and test the full request lifecycle, you can make actual [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch) requests to the server and assert that the responses have the values you expect. Pogo makes this style of testing easier with [`server.inject()`](serverinjectrequest), which is similar to `fetch()` except it bypasses the network layer. By injecting a request into the server directly, we can completely avoid the need to find an available port, listen on that port, make HTTP connections, and all of the problems and complexity that arise from networked tests. You should focus on writing your application logic and `server.inject()` makes that easier. It also makes your tests faster.
 
-The server still processes the request using the same code paths that a normal HTTP request goes through, so you can rest assured that your tests are meaningful and realistic.
+When using `server.inject()`, the server still processes the request using the same code paths that a normal HTTP request goes through, so you can rest assured that your tests are meaningful and realistic.
 
 ```ts
-const response = await server.inject({
-    method : 'GET',
-    url    : '/users'
+import pogo from 'https://deno.land/x/pogo/main.ts';
+import { assertStrictEquals } from 'https://deno.land/std/testing/asserts.ts';
+
+const { test } = Deno;
+
+test('my app works', async () => {
+    const server = pogo.server();
+    server.router.get('/', () => {
+        return 'Hello, World!';
+    });
+    const response = await server.inject({
+        method : 'GET',
+        url    : '/'
+    });
+    assertStrictEquals(response.status, 200);
+    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.body, 'Hello, World!');
 });
 ```
 

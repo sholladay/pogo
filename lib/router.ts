@@ -155,7 +155,7 @@ export default class Router {
 
         const normalizedRoute = {
             ...(typeof route === 'string' ? { path : route } : route),
-            ...(typeof options === 'function' ? { handler : options} : options),
+            ...(typeof options === 'function' ? { handler : options } : options),
             ...(handler ? { handler } : null)
         } as Route;
 
