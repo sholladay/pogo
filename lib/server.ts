@@ -22,7 +22,7 @@ import Router, {
 import { RouteHandler, RouteOptions, ServerOptions } from './types.ts';
 
 const getPathname = (path: string): string => {
-    return new URL(path, 'about:blank').pathname;
+    return new URL(path, 'invalid:/').pathname;
 };
 
 /**
