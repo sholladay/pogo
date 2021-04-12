@@ -25,13 +25,12 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 ## Usage
 
-Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page.
+Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page. To listen over network, add `hostname : '0.0.0.0` in the server options.
 
 ```ts
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
-//Add "hostname : '0.0.0.0'" to access over network
 
 server.router.get('/', () => {
     return 'Hello, world!';
