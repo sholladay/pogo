@@ -31,7 +31,7 @@ Save the code below to a file named `server.js` and run it with a command like `
 import pogo from 'https://deno.land/x/pogo/main.ts';
 
 const server = pogo.server({ port : 3000 });
-//Add { hostname : '0.0.0.0' } to access over network
+//Add "hostname : '0.0.0.0'" to access over network
 
 server.router.get('/', () => {
     return 'Hello, world!';
