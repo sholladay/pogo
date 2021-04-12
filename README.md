@@ -25,7 +25,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
 
 ## Usage
 
-Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page. To expose the server publicly so you can access it from other machines, add `hostname : '0.0.0.0'` to the server options.
+Save the code below to a file named `server.js` and run it with a command like `deno run --allow-net server.js`. Then visit http://localhost:3000 in your browser and you should see "Hello, world!" on the page. To make the server publicly accessible from other machines, add `hostname : '0.0.0.0'` to the options.
 
 ```ts
 import pogo from 'https://deno.land/x/pogo/main.ts';
