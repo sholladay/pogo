@@ -1,9 +1,11 @@
 # Simple Server
 
-This is an example of a very basic application, similar to [Hello World](../hello-world), but with the following changes:
- - Added a test in `test.js` that demonstrates the use of [`server.inject()`](../../README.md#serverinjectrequest).
- - Moved the server creation to `main.ts` and only start the server in `run.ts`, so the tests can import the server without starting it.
- - Created `dependencies.ts` and `dev-dependencies.ts` as a central location to import external dependencies, similar to `package.json` in Node.js.
+This is an example of a very basic Pogo application,
+
+Based on [Hello World](../hello-world), with the following changes:
+ - Added a test in [`test.js`](./test.js) that demonstrates the use of [`server.inject()`](../../README.md#serverinjectrequest).
+ - Moved the server creation to [`main.ts`](./main.ts) and only start the server in [`run.ts`](./run.ts), so the tests can import the server without starting it.
+ - Created [`dependencies.ts`](./dependencies.ts) and [`dev-dependencies.ts`](./dev-dependencies.ts) as a central location to import external dependencies, similar to `package.json` in Node.js.
 
 ## Run the example
 
