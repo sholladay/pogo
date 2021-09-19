@@ -56,7 +56,7 @@ server.route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
 
 ```ts
 server
-    .route({ method : 'GET', path : '/hi', handler : () => 'Hello!' });
+    .route({ method : 'GET', path : '/hi', handler : () => 'Hello!' })
     .route({ method : 'GET', path : '/bye', handler : () => 'Goodbye!' });
 ```
 
@@ -148,7 +148,7 @@ server.start();
 
 Pogo is designed to make testing easy. When you write tests for your app, you will probably want to test your server and route handlers in some way. Pogo encourages [pure](https://en.wikipedia.org/wiki/Pure_function) functional route handlers, enabling them to be tested in isolation from each other and even independently of Pogo itself, with little to no mocking required.
 
-If you want to go further and test the full request lifecycle, you can make actual [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch) requests to the server and assert that the responses have the values you expect. Pogo makes this style of testing easier with [`server.inject()`](serverinjectrequest), which is similar to `fetch()` except it bypasses the network layer. By injecting a request into the server directly, we can completely avoid the need to find an available port, listen on that port, make HTTP connections, and all of the problems and complexity that arise from networked tests. You should focus on writing your application logic and `server.inject()` makes that easier. It also makes your tests faster.
+If you want to go further and test the full request lifecycle, you can make actual [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch) requests to the server and assert that the responses have the values you expect. Pogo makes this style of testing easier with [`server.inject()`](#serverinjectrequest), which is similar to `fetch()` except it bypasses the network layer. By injecting a request into the server directly, we can completely avoid the need to find an available port, listen on that port, make HTTP connections, and all of the problems and complexity that arise from networked tests. You should focus on writing your application logic and `server.inject()` makes that easier. It also makes your tests faster.
 
 When using `server.inject()`, the server still processes the request using the same code paths that a normal HTTP request goes through, so you can rest assured that your tests are meaningful and realistic.
 
@@ -183,7 +183,7 @@ test('my app works', async () => {
    - [`server.router`](#serverrouter)
    - [`server.start()`](#serverstart)
    - [`server.stop()`](#serverstop)
- - [Request](#request-1)
+ - [Request](#request)
    - [`request.body`](#requestbody)
    - [`request.headers`](#requestheaders)
    - [`request.host`](#requesthost)
@@ -439,7 +439,7 @@ server.router.post('/users', async (request) => {
 If you want more control over how the stream is processed, instead of reading it all into memory, you can read raw bytes from the body in chunks with `request.body.read()`. It takes a [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) as an argument to copy the bytes into and returns a `Promise` for either the number of bytes read or `null` when the body is finished being read. In the example below, we read up to a maximum of 20 bytes from the body.
 
 ```ts
-server.router.post('/data', (request) => {
+server.router.post('/data', async (request) => {
     const buffer = new Uint8Array(20);
     const numBytesRead = await request.body.read(buffer);
     const data = new TextDecoder().decode(buffer.subarray(0, numBytesRead));
@@ -764,7 +764,7 @@ Optional directory path used to limit which files are allowed to be accessed, wh
 
 #### h.redirect(url)
 
-Creates a new response with a redirect status. Shortcut for `h.response().redirect(url)`. See [`response.redirect()`](#responseredirect) for details.
+Creates a new response with a redirect status. Shortcut for `h.response().redirect(url)`. See [`response.redirect()`](#responseredirecturl) for details.
 
 Returns the response so other methods can be chained.
 
