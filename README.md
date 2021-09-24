@@ -183,7 +183,7 @@ test('my app works', async () => {
    - [`server.router`](#serverrouter)
    - [`server.start()`](#serverstart)
    - [`server.stop()`](#serverstop)
- - [Request](#request)
+ - [Request](#request-1)
    - [`request.body`](#requestbody)
    - [`request.headers`](#requestheaders)
    - [`request.host`](#requesthost)
