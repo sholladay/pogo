@@ -60,4 +60,7 @@ export default class Request {
     get searchParams() {
         return this.url.searchParams;
     }
+    toString() {
+        return this.method + ' ' + this.url.href;
+    }
 }
