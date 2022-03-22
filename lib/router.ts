@@ -323,8 +323,8 @@ export default class Router {
                 if (!isHostMatch) {
                     return false;
                 }
-                // If there are no params, it's a static path
-                if (route.paramNames.length === 0) {
+                const isStaticPath = route.paramNames.length === 0;
+                if (isStaticPath) {
                     return route.path === path;
                 }
 

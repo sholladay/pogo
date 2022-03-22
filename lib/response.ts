@@ -16,26 +16,28 @@ interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
  * A response represents an outgoing message that will be returned by your server for a corresponding request.
  * Use `h.response()` to create a response instance.
  */
-export default class Response {
+export default class ServerResponse {
     body: ResponseBody;
     headers: Headers;
     status: number;
     permanent?: () => this;
     temporary?: () => this;
     rewritable?: (isRewritable: boolean) => this;
-    constructor(options?: ResponseOptions) {
+    constructor(options?: Response | ResponseOptions) {
+        const init = options instanceof Response ? options.clone() : options;
+        this.raw = new Response(init.body, init);
         this.body = options?.body ?? null;
         this.headers = new Headers(options?.headers);
         this.status = options?.status ?? status.OK;
     }
-    static wrap(input: Response | ResponseBody | Error) {
-        if (input instanceof Response) {
+    static wrap(input: ServerResponse | ResponseBody | Error) {
+        if (input instanceof ServerResponse) {
             return input;
         }
         if (input instanceof Error) {
             return Bang.wrap(input).response;
         }
-        return new Response({ body : input });
+        return new ServerResponse({ body : input });
     }
     code(statusCode: number) {
         this.status = statusCode;
@@ -56,14 +58,14 @@ export default class Response {
         return this.header('Location', url);
     }
     redirect(url: string) {
+        this.code(status.Found);
+        this.location(url);
         const _isRewritable = () => {
             return [status.MovedPermanently, status.Found].includes(this.status);
         };
         const _isTemporary = () => {
             return [status.TemporaryRedirect, status.Found].includes(this.status);
         };
-        this.code(status.Found);
-        this.location(url);
         this.permanent = () => {
             this.code(_isRewritable() ? status.MovedPermanently : status.PermanentRedirect);
             return this;
@@ -86,7 +88,7 @@ export default class Response {
     state(name: cookie.Cookie): this;
     state(name: string, value: string | CookieOptions): this;
     state(name: string | cookie.Cookie, value?: string | CookieOptions) {
-        cookie.setCookie(this, {
+        cookie.setCookie(this.headers, {
             httpOnly : true,
             sameSite : 'Strict',
             secure   : true,

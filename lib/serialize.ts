@@ -4,11 +4,11 @@ import {
     status,
     statusText
 } from '../dependencies.ts';
-import Response from './response.ts';
+import ServerResponse from './response.ts';
 import { ResponseBody } from './types.ts';
 
-const serialize = (source: Response | ResponseBody | Error): Response => {
-    const response = Response.wrap(source);
+const serialize = (source: ServerResponse | ResponseBody | Error): Response => {
+    const response = ServerResponse.wrap(source);
 
     if (React.isValidElement(response.body)) {
         response.body = ReactDOMServer.renderToStaticMarkup(response.body);

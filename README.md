@@ -416,7 +416,7 @@ console.log('Stopped listening for requests');
 
 ### Request
 
-The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is similar to an instance of Deno's [`ServerRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#ServerRequest) class, with some additions.
+The `request` object passed to route handlers represents an HTTP [request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#Requests) that was sent to the server. It is similar to an instance of the web standard [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) class, with some additions.
 
 It provides properties and methods for inspecting the content of the request.
 
@@ -509,7 +509,7 @@ The path part of the request URL, excluding the query. Shortcut for `request.url
 
 #### request.raw
 
-Type: [`ServerRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#ServerRequest)
+Type: [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 
 The original request object from Deno's `http` module, upon which many of the other request properties are based.
 
