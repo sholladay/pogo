@@ -1,17 +1,46 @@
 import { status, statusText } from '../dependencies.ts';
 import ServerResponse from './response.ts';
 
-interface BangOptions {
-    message?: string,
+export interface BangOptions {
+    ctor?: () => Bang,
     status?: number
+    message?: string
 }
+
+export interface MethodNotAllowedOptions extends BangOptions {
+    allow?: string | Iterable<string>
+}
+
+const toOptions = (options?: string | BangOptions): BangOptions => {
+    return typeof options === 'string' ? { message : options } : { ...options };
+};
+
+const shortcut = (
+    message: string | Error | undefined,
+    options: string | BangOptions | undefined,
+    status: number,
+    ctor: () => Bang
+) => {
+    return new Bang(message, {
+        ...toOptions(options),
+        ctor,
+        status
+    })
+};
 
 export class Bang extends Error {
     response: ServerResponse;
     isDeveloperError?: true;
-    constructor(error?: string | Error, options?: BangOptions) {
-        const code = options?.status ?? status.InternalServerError;
-        super(options?.message || ((error instanceof Error) ? error.message : error) || statusText.get(code));
+    constructor(message?: string | Error, options?: string | BangOptions) {
+        options = toOptions(options);
+        const code = options.status ?? status.InternalServerError;
+        const msg = options.message || (typeof message === 'string' ? message : '') || statusText.get(code);
+        const cause = message instanceof Error ? message : undefined;
+        const ctor = typeof options.ctor === 'function' ? options.ctor : Bang; 
+
+        super(msg, cause && { cause });
+        Error.captureStackTrace(this, ctor);
+
         this.response = new ServerResponse({
             status : code,
             body   : {
@@ -21,243 +50,180 @@ export class Bang extends Error {
             }
         });
     }
-    static wrap(input: string | Error) {
-        return input instanceof Bang ? input : new Bang(input);
+    static wrap(message?: string | Error) {
+        return message instanceof Bang ? message : new Bang(message, { ctor : Bang.wrap });
     }
 }
 
-export const badRequest = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.BadRequest });
+export const badRequest = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.BadRequest, badRequest);
 };
 
-export const unauthorized = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.Unauthorized });
+export const unauthorized = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Unauthorized, unauthorized);
 };
 
-export const paymentRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.PaymentRequired });
+export const paymentRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.PaymentRequired, paymentRequired);
 };
 
-export const forbidden = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.Forbidden });
+export const forbidden = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Forbidden, forbidden);
 };
 
-export const notFound = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.NotFound });
+export const notFound = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.NotFound, notFound);
 };
 
-export const methodNotAllowed = (error?: string | Error, message?: string, allow?: string | Array<string>) => {
-    const err = new Bang(error, { status : status.MethodNotAllowed });
-    err.response.headers.set('Allow', [].concat(allow).join(', '));
-    return err;
+export const methodNotAllowed = (message?: string | Error, options?: string | MethodNotAllowedOptions) => {
+    options = toOptions(options);
+    const error = shortcut(message, options, status.MethodNotAllowed, methodNotAllowed);
+    const _allow = options.allow || [];
+    const allow = Array.from(typeof _allow === 'string' ? [_allow] : _allow).filter(Boolean);
+    if (allow.length > 0) {
+        error.response.headers.set('Allow', allow.join(', '));
+    }
+    return error;
 };
 
-export const notAcceptable = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.NotAcceptable });
+export const notAcceptable = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.NotAcceptable, notAcceptable);
 };
 
-export const proxyAuthRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.ProxyAuthRequired });
+export const proxyAuthRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.ProxyAuthRequired, proxyAuthRequired);
 };
 
-export const clientTimeout = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.RequestTimeout });
+export const clientTimeout = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.RequestTimeout, clientTimeout);
 };
 
-export const conflict = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.Conflict });
+export const conflict = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Conflict, conflict);
 };
 
-export const gone = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.Gone });
+export const gone = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Gone, gone);
 };
 
-export const lengthRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.LengthRequired });
+export const lengthRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.LengthRequired, lengthRequired);
 };
 
-export const preconditionFailed = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.PreconditionFailed });
+export const preconditionFailed = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.PreconditionFailed, preconditionFailed);
 };
 
-export const entityTooLarge = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.RequestEntityTooLarge });
+export const entityTooLarge = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.RequestEntityTooLarge, entityTooLarge);
 };
 
-export const urlTooLong = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.RequestURITooLong });
+export const urlTooLong = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.RequestURITooLong, urlTooLong);
 };
 
-export const unsupportedMediaType = (error?: string | Error, message?: string) => {
-    return new Bang(error, { status : status.UnsupportedMediaType });
+export const unsupportedMediaType = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.UnsupportedMediaType, unsupportedMediaType);
 };
 
-export const rangeNotSatisfiable = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.RequestedRangeNotSatisfiable
-    });
+export const rangeNotSatisfiable = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.RequestedRangeNotSatisfiable, rangeNotSatisfiable);
 };
 
-export const expectationFailed = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.ExpectationFailed
-    });
+export const expectationFailed = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.ExpectationFailed, expectationFailed);
 };
 
-export const teapot = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.Teapot
-    });
+export const teapot = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Teapot, teapot);
 };
 
-export const misdirected = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.MisdirectedRequest
-    });
+export const misdirected = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.MisdirectedRequest, misdirected);
 };
 
-export const badData = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.UnprocessableEntity
-    });
+export const badData = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.UnprocessableEntity, badData);
 };
 
-export const locked = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.Locked
-    });
+export const locked = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.Locked, locked);
 };
 
-export const failedDependency = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.FailedDependency
-    });
+export const failedDependency = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.FailedDependency, failedDependency);
 };
 
-export const upgradeRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.UpgradeRequired
-    });
+export const tooEarly = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.TooEarly, tooEarly);
 };
 
-export const preconditionRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.PreconditionRequired
-    });
+export const upgradeRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.UpgradeRequired, upgradeRequired);
 };
 
-export const tooManyRequests = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.TooManyRequests
-    });
+export const preconditionRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.PreconditionRequired, preconditionRequired);
 };
 
-export const headerFieldsTooLarge = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.RequestHeaderFieldsTooLarge
-    });
+export const tooManyRequests = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.TooManyRequests, tooManyRequests);
 };
 
-export const illegal = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.UnavailableForLegalReasons
-    });
+export const headerFieldsTooLarge = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.RequestHeaderFieldsTooLarge, headerFieldsTooLarge);
 };
 
-export const internal = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.InternalServerError
-    });
+export const illegal = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.UnavailableForLegalReasons, illegal);
 };
 
-export const notImplemented = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.NotImplemented
-    });
+export const internal = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.InternalServerError, internal);
 };
 
-export const badGateway = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.BadGateway
-    });
+export const badImplementation = (message?: string | Error, options?: string | BangOptions) => {
+    const error = shortcut(message, options, status.InternalServerError, badImplementation);
+    error.isDeveloperError = true;
+    return error;
 };
 
-export const serverUnavailable = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.ServiceUnavailable
-    });
+export const notImplemented = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.NotImplemented, notImplemented);
 };
 
-export const gatewayTimeout = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.GatewayTimeout
-    });
+export const badGateway = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.BadGateway, badGateway);
 };
 
-export const unsupportedHttpVersion = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.HTTPVersionNotSupported
-    });
+export const serverUnavailable = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.ServiceUnavailable, serverUnavailable);
 };
 
-export const variantAlsoNegotiates = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.VariantAlsoNegotiates
-    });
+export const gatewayTimeout = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.GatewayTimeout, gatewayTimeout);
 };
 
-export const insufficientStorage = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.InsufficientStorage
-    });
+export const unsupportedHttpVersion = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.HTTPVersionNotSupported, unsupportedHttpVersion);
 };
 
-export const loopDetected = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.LoopDetected
-    });
+export const variantAlsoNegotiates = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.VariantAlsoNegotiates, variantAlsoNegotiates);
 };
 
-export const notExtended = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.NotExtended
-    });
+export const insufficientStorage = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.InsufficientStorage, insufficientStorage);
 };
 
-export const networkAuthenticationRequired = (error?: string | Error, message?: string) => {
-    return new Bang(error, {
-        message,
-        status : status.NetworkAuthenticationRequired
-    });
+export const loopDetected = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.LoopDetected, loopDetected);
 };
 
-export const badImplementation = (error?: string | Error, message?: string) => {
-    const err = new Bang(error, {
-        message,
-        status : status.InternalServerError
-    });
-    err.isDeveloperError = true;
-    return err;
+export const notExtended = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.NotExtended, notExtended);
+};
+
+export const networkAuthenticationRequired = (message?: string | Error, options?: string | BangOptions) => {
+    return shortcut(message, options, status.NetworkAuthenticationRequired, networkAuthenticationRequired);
 };

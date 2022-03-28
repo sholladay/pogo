@@ -1,16 +1,16 @@
 import file from './file.ts';
 import * as bang from '../bang.ts';
-import Response from '../response.ts';
+import ServerResponse from '../response.ts';
 import isPathInside from '../util/is-path-inside.ts';
 import readDirStats from '../util/read-dir-stats.ts';
 import DirectoryListing from '../components/directory-listing.tsx';
 import { React, path } from '../../dependencies.ts';
 
-export interface DirectoryHandlerOptions {
+interface DirectoryHandlerOptions {
     listing: boolean
 }
 
-const directory = async (dirPath: string, filePath?: string, options?: DirectoryHandlerOptions): Promise<Response> => {
+const directory = async (dirPath: string, filePath?: string, options?: DirectoryHandlerOptions): Promise<ServerResponse> => {
     const joinedFilePath = path.join(dirPath, filePath ?? '.');
     const isDirPath = path.relative(dirPath, joinedFilePath) === '';
     if (!isDirPath && !(await isPathInside.fs(joinedFilePath, dirPath))) {
@@ -27,7 +27,10 @@ const directory = async (dirPath: string, filePath?: string, options?: Directory
     files.sort((left, right) => {
         return left.name.localeCompare(right.name);
     });
-    return Response.wrap(<DirectoryListing basePath={path.relative(dirPath, joinedFilePath)} files={files} />);
+    return ServerResponse.wrap(<DirectoryListing basePath={path.relative(dirPath, joinedFilePath)} files={files} />);
 };
 
 export default directory;
+export type {
+    DirectoryHandlerOptions
+};

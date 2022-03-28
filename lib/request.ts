@@ -1,7 +1,7 @@
 import { cookie } from '../dependencies.ts';
 import ServerResponse from './response.ts';
 import Server from './server.ts';
-import { RequestParams, MatchedRoute } from './types.ts';
+import { MatchedRoute, RequestState } from './types.ts';
 
 interface RequestOptions {
     raw: Request,
@@ -16,9 +16,9 @@ interface RequestOptions {
 export default class ServerRequest {
     raw: Request;
     route: MatchedRoute;
-    response: Response;
+    response: ServerResponse;
     server: Server;
-    state: Record<string, string>;
+    state: RequestState;
     url: URL;
     constructor(options: RequestOptions) {
         this.raw = options.raw;

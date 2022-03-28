@@ -60,6 +60,9 @@ const toPathfinder = (segments: Array<string>): string => {
     return segments.map(replacePart).join('/');
 };
 
+/**
+ * Returns a human friendly text representation of the given route, such as GET /foo
+ */
 const toSignature = (route: NormalizedRoute): string => {
     return route.method + ' ' + (route.vhost || '') + route.path;
 };
@@ -354,3 +357,7 @@ export default class Router {
         };
     }
 }
+
+export {
+    toSignature
+};

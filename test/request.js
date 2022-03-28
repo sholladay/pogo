@@ -18,13 +18,14 @@ test('request.headers is a Headers instance', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject(new Request(server.url, {
+        headers : {
+            host : 'localhost'
+        }
+    }));
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isHeadersInstance : true,
         hostHeader        : 'localhost',
         type              : 'object'
@@ -32,7 +33,7 @@ test('request.headers is a Headers instance', async () => {
 });
 
 test('request.host is a hostname and port', async () => {
-    const server = pogo.server();
+    const server = pogo.server({ port : 3000 });
     server.route({
         method : 'GET',
         path   : '/',
@@ -45,27 +46,29 @@ test('request.host is a hostname and port', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject(new Request(server.url, {
+        headers : {
+            host : server.url.host
+        }
+    }));
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isSameAsHeader : true,
         isSameAsUrl    : true,
         type           : 'string',
-        value          : 'localhost'
+        value          : 'localhost:3000'
     }));
 });
 
 test('request.hostname is a domain or IP address', async () => {
-    const server = pogo.server();
+    const server = pogo.server({ port : 3000 });
     server.route({
         method : 'GET',
         path   : '/',
         handler(request) {
             return {
+                isSameAsHeader : request.hostname === request.headers.get('host'),
                 isInHostHeader : request.hostname === request.headers.get('host').split(':')[0],
                 isSameAsUrl    : request.hostname === request.url.hostname,
                 type           : typeof request.hostname,
@@ -73,13 +76,15 @@ test('request.hostname is a domain or IP address', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject(new Request(server.url, {
+        headers : {
+            host : server.url.host
+        }
+    }));
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
+        isSameAsHeader : false,
         isInHostHeader : true,
         isSameAsUrl    : true,
         type           : 'string',
@@ -100,13 +105,10 @@ test('request.href is a full URL string', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : 'http://localhost/'
@@ -116,23 +118,20 @@ test('request.href is a full URL string', async () => {
 test('request.method is an HTTP method', async () => {
     const server = pogo.server();
     server.route({
-        method : 'GET',
+        method : 'PUT',
         path   : '/',
         handler(request) {
             return {
-                isGet : request.method === 'GET',
+                isPut : request.method === 'PUT',
                 type  : typeof request.method
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject(new Request(server.url, { method : 'PUT' }));
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
-        isGet : true,
+    assertStrictEquals(await response.text(), JSON.stringify({
+        isPut : true,
         type  : 'string'
     }));
 });
@@ -150,13 +149,10 @@ test('request.origin is a protocol and host', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : 'http://localhost'
@@ -176,13 +172,10 @@ test('request.params contains path variables', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/users/123'
-    });
+    const response = await server.inject('/users/123');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         type   : 'object',
         userId : '123',
         value  : {
@@ -204,13 +197,10 @@ test('request.path is a URL path string', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/?query'
-    });
+    const response = await server.inject('/?query');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : '/'
@@ -229,13 +219,10 @@ test('request.raw is the original request', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isGet : true,
         type  : 'object'
     }));
@@ -254,28 +241,24 @@ test('request.referrer is a referrer URL string', async () => {
             };
         }
     });
-    const withoutResponse = await server.inject({
-        method  : 'GET',
-        url     : '/',
+    const withoutResponse = await server.inject(new Request(server.url, {
         headers : new Headers()
-    });
-    const withResponse = await server.inject({
-        method  : 'GET',
-        url     : '/',
+    }));
+    const withResponse = await server.inject(new Request(server.url, {
         headers : new Headers({
             referer : 'https://example.com'
         })
-    });
+    }));
     assertStrictEquals(withoutResponse.status, 200);
     assertStrictEquals(withoutResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(withoutResponse.body, JSON.stringify({
+    assertStrictEquals(await withoutResponse.text(), JSON.stringify({
         isRefererHeader : false,
         type            : 'string',
         value           : ''
     }));
     assertStrictEquals(withResponse.status, 200);
     assertStrictEquals(withResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(withResponse.body, JSON.stringify({
+    assertStrictEquals(await withResponse.text(), JSON.stringify({
         isRefererHeader : true,
         type            : 'string',
         value           : 'https://example.com'
@@ -294,13 +277,10 @@ test('request.response is a Response instance', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isResponseInstance : true,
         type               : 'object'
     }));
@@ -322,13 +302,10 @@ test('request.route is a router record', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/status'
-    });
+    const response = await server.inject('/status');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         handlerType : 'function',
         method      : '*',
         params      : {
@@ -353,13 +330,10 @@ test('request.search is a URL search string', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/?query'
-    });
+    const response = await server.inject('/?query');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isSameAsUrl : true,
         type        : 'string',
         value       : '?query'
@@ -380,13 +354,10 @@ test('request.searchParams is a URLSearchParams instance', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/?query'
-    });
+    const response = await server.inject('/?query');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         asString         : 'query=',
         isSameAsUrl      : true,
         isParamsInstance : true,
@@ -406,13 +377,10 @@ test('request.server is a Server instance', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         isServerInstance : true,
         type             : 'object'
     }));
@@ -431,16 +399,14 @@ test('request.state is an object with cookies', async () => {
             };
         }
     });
-    const response = await server.inject({
+    const response = await server.inject(new Request(server.url, {
         headers : new Headers({
             cookie : 'science=rocket'
-        }),
-        method : 'GET',
-        url    : '/'
-    });
+        })
+    }));
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         science : 'rocket',
         type    : 'object',
         value   : {
@@ -463,13 +429,10 @@ test('request.url is a URL instance', async () => {
             };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         asString      : 'http://localhost/',
         href          : 'http://localhost/',
         isUrlInstance : true,

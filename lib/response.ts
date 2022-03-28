@@ -1,4 +1,10 @@
-import { cookie, status } from '../dependencies.ts';
+import {
+    React,
+    ReactDOMServer,
+    cookie,
+    status,
+    statusText
+ } from '../dependencies.ts';
 import { Bang } from './bang.ts';
 import { ResponseBody } from './types.ts';
 
@@ -22,15 +28,13 @@ export default class ServerResponse {
     status: number;
     permanent?: () => this;
     temporary?: () => this;
-    rewritable?: (isRewritable: boolean) => this;
-    constructor(options?: Response | ResponseOptions) {
-        const init = options instanceof Response ? options.clone() : options;
-        this.raw = new Response(init.body, init);
-        this.body = options?.body ?? null;
+    rewritable?: (isRewritable?: boolean) => this;
+    constructor(options?: ResponseOptions) {
+        this.body = typeof options?.body === 'undefined' ? null : options?.body;
         this.headers = new Headers(options?.headers);
         this.status = options?.status ?? status.OK;
     }
-    static wrap(input: ServerResponse | ResponseBody | Error) {
+    static wrap(input?: ServerResponse | ResponseBody | Error) {
         if (input instanceof ServerResponse) {
             return input;
         }
@@ -43,7 +47,7 @@ export default class ServerResponse {
         this.status = statusCode;
         return this;
     }
-    created(url?: string) {
+    created(url?: string | URL) {
         this.code(status.Created);
         if (url) {
             this.location(url);
@@ -54,10 +58,10 @@ export default class ServerResponse {
         this.headers.set(name, value);
         return this;
     }
-    location(url: string) {
-        return this.header('Location', url);
+    location(url: string | URL) {
+        return this.header('Location', url.toString());
     }
-    redirect(url: string) {
+    redirect(url: string | URL) {
         this.code(status.Found);
         this.location(url);
         const _isRewritable = () => {
@@ -97,11 +101,53 @@ export default class ServerResponse {
         });
         return this;
     }
+    toWeb(): Response {
+        const defaultHeader = (name: string, value: string) => {
+            if (!this.headers.has(name)) {
+                this.headers.set(name, value);
+            }
+        };
+        if (React.isValidElement(this.body)) {
+            this.body = ReactDOMServer.renderToStaticMarkup(this.body);
+        }
+        if (typeof this.body === 'string') {
+            const mediaType = this.body ? 'text/html' : 'text/plain';
+            defaultHeader('content-type', mediaType + '; charset=utf-8');
+        }
+        else if (
+            this.body === null ||
+            this.body === undefined ||
+            this.body instanceof Blob ||
+            this.body instanceof FormData ||
+            this.body instanceof URLSearchParams ||
+            this.body instanceof ReadableStream ||
+            this.body instanceof Uint8Array) {
+            // Let Deno handle it natively
+        }
+        else if (['object', 'number', 'boolean'].includes(typeof this.body)) {
+            defaultHeader('content-type', 'application/json; charset=utf-8');
+            this.body = JSON.stringify(this.body);
+        }
+        else {
+            this.status = status.InternalServerError;
+            this.headers.set('content-type', 'application/json; charset=utf-8');
+            this.body = JSON.stringify({
+                error   : statusText.get(status.InternalServerError),
+                message : statusText.get(status.InternalServerError),
+                status  : status.InternalServerError
+            });
+        }
+
+        return new Response(this.body, {
+            headers : this.headers,
+            status  : this.status
+        });
+    }
     type(mediaType: string) {
         return this.header('Content-Type', mediaType);
     }
     unstate(name: string) {
-        cookie.deleteCookie(this, name);
+        cookie.deleteCookie(this.headers, name);
         return this;
     }
 }

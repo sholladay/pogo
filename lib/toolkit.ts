@@ -21,10 +21,10 @@ export default class Toolkit {
         const filePath = this.request.params[lastParamName];
         return directory(path, filePath, options);
     }
-    response(body?: ResponseBody): ServerResponse {
-        return new ServerResponse({ body });
+    response(input?: ServerResponse | ResponseBody | Error): ServerResponse {
+        return ServerResponse.wrap(input);
     }
-    redirect(url: string): ServerResponse {
+    redirect(url: string | URL): ServerResponse {
         return this.response().redirect(url);
     }
 }

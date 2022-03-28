@@ -3,7 +3,7 @@ import {
     assertEquals,
     assertStrictEquals
 } from '../dev-dependencies.ts';
-import Response from '../lib/response.ts';
+import ServerResponse from '../lib/response.ts';
 import * as bang from '../lib/bang.ts';
 
 const { test } = Deno;
@@ -13,7 +13,7 @@ test('new Bang() is a 500 error by default', () => {
     assert(error instanceof Error);
     assert(error instanceof bang.Bang);
     assertStrictEquals(error.message, 'Internal Server Error');
-    assert(error.response instanceof Response);
+    assert(error.response instanceof ServerResponse);
     assertStrictEquals(error.response.status, 500);
     assertEquals(error.response.body, {
         error   : 'Internal Server Error',
@@ -61,7 +61,9 @@ test('new Bang() with custom message and 501 status', () => {
 test('new Bang() with error', () => {
     const error = new bang.Bang(new Error('some problem'));
     assert(error instanceof Error);
-    assertStrictEquals(error.message, 'some problem');
+    assert(error.cause instanceof Error);
+    assertStrictEquals(error.message, 'Internal Server Error');
+    assertStrictEquals(error.cause.message, 'some problem');
     assertStrictEquals(error.response.status, 500);
     assertEquals(error.response.body, {
         error   : 'Internal Server Error',
@@ -73,11 +75,13 @@ test('new Bang() with error', () => {
 test('new Bang() with error and 501 status', () => {
     const error = new bang.Bang(new Error('some problem'), { status : 501 });
     assert(error instanceof Error);
-    assertStrictEquals(error.message, 'some problem');
+    assert(error.cause instanceof Error);
+    assertStrictEquals(error.message, 'Not Implemented');
+    assertStrictEquals(error.cause.message, 'some problem');
     assertStrictEquals(error.response.status, 501);
     assertEquals(error.response.body, {
         error   : 'Not Implemented',
-        message : 'some problem',
+        message : 'Not Implemented',
         status  : 501
     });
 });

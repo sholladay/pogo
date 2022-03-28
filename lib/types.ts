@@ -1,5 +1,5 @@
 import Request from './request.ts';
-import Response from './response.ts';
+import ServerResponse from './response.ts';
 import Toolkit from './toolkit.ts';
 
 export interface Route {
@@ -10,6 +10,7 @@ export interface Route {
 }
 
 export type RequestParams = { [param: string]: string };
+export type RequestState = { [name: string]: string };
 
 export interface RouteOptions extends Omit<Partial<Route>, 'method' | 'path'> {
     method?: Route['method'] | Iterable<Route['method']>,
