@@ -396,7 +396,7 @@ The route manager for the server, which contains the routing table for all known
 
 Begins listening for requests on the [`hostname`](#hostname) and [`port`](#port) specified in the server options.
 
-Returns a `Promise` that resolves when the server is listening.
+Returns a `Promise` that ~resolves when the server is listening~ (see upstream issue denoland/deno_std#2071)(https://github.com/denoland/deno_std/issues/2071).
 
 ```ts
 await server.start();
