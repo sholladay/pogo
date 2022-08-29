@@ -303,32 +303,26 @@ The `server` object returned by `pogo.server()` represents your [web server](htt
 
 Performs a request directly to the server without using the network. Useful when writing tests, to avoid conflicts from multiple servers trying to listen on the same port number.
 
-Returns a `Promise` for a [`Response`](#response) instance.
+Returns a `Promise` for a web [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) instance.
 
 ```ts
-const response = await server.inject({
-    method : 'GET',
-    url    : '/'
-});
+const response = await server.inject('/foo');
+```
+
+```ts
+const response = await server.inject(new URL('/foo', server.url));
+```
+
+```ts
+const response = await server.inject(new Request(new URL('/foo', server.url), { method : 'POST' }));
 ```
 
 ##### request
 
-Type: `object`
-
-###### method
-
-Type: `string`\
-Example: `'GET'`
-
-Any valid [HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), such as `GET` or `POST`. Used to lookup the route handler.
-
-###### url
-
-Type: `string`\
+Type: `string` | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)\
 Example: `'/'`
 
-Any valid URL path. Used to lookup the route handler.
+The request info used to determine which route will generate a response. By default, it is a `GET` request.
 
 #### server.route(route, options?, handler?)
 
@@ -513,7 +507,7 @@ Type: [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 
 The original request object from Deno's `http` module, upon which many of the other request properties are based.
 
-*You probably don't need this. It is provided as an escape hatch, but using it is not recommended.*
+*You probably don't need this, except to read the request body.*
 
 #### request.referrer
 
@@ -521,7 +515,7 @@ Type: `string`
 
 The value of the HTTP [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer) header, which is useful for determining where the request came from. However, not all user agents send a referrer and the value can be influenced by various mechanisms, such as [`Referrer-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy). As such, it is recommended to use the referrer as a hint, rather than relying on it directly.
 
-Note that this property uses the correct spelling of "referrer", unlike the header. It will be an empty string if the header is missing.
+Note that this property uses the [correct spelling](https://en.wikipedia.org/wiki/HTTP_referer#Etymology) of "referrer", unlike the header. It will be an empty string if the header is missing.
 
 #### request.response
 
@@ -585,7 +579,7 @@ Type: `string` | `object` | [`Uint8Array`](https://developer.mozilla.org/en-US/d
 
 The [body]([body](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body_2)) that will be sent in the response. Can be updated by returning a value from the route handler or by creating a new response with [`h.response()`](#hresponsebody) and giving it a value.
 
-#### response.code(statusCode)
+#### response.code(status)
 
 Sets the response [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). When possible, it is better to use a more specific method instead, such as [`response.created()`](#responsecreatedurl) or [`response.redirect()`](#responseredirecturl).
 
@@ -863,9 +857,9 @@ Returns the router so other methods can be chained.
 const router = pogo.router().get('/', () => 'Hello, World!');
 ```
 
-#### router.lookup(method, path)
+#### router.lookup(method, path, host?)
 
-Look up a route that matches the given `method` and `path`.
+Look up a route that matches the given `method`, `path`, and optional `host`.
 
 Returns the route object with an additional `params` property that contains path parameter names and values.
 
