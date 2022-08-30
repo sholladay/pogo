@@ -21,7 +21,7 @@ Pogo is an easy-to-use, safe, and expressive framework for writing web servers a
  - Designed to encourage reliable and testable applications.
  - Routes are simple, pure functions that return values directly.
  - Automatic JSON responses from objects.
- - Built-in support for React and JSX.
+ - Built-in support for [React](https://reactjs.org) and [JSX](https://reactjs.org/docs/introducing-jsx.html).
 
 ## Usage
 
