@@ -116,8 +116,8 @@ Using `Deno.open()` to get the data as a stream to improve latency and memory us
 
 ```ts
 server.router.get('/', async (request, h) => {
-    const stream = await Deno.open('./dogs.jpg');
-    return h.response(stream).type('image/jpeg');
+    const file = await Deno.open('./dogs.jpg');
+    return h.response(file).type('image/jpeg');
 });
 ```
 
@@ -129,7 +129,7 @@ You can do webpage templating with [React](https://reactjs.org/) inside of route
 
 Pogo automatically renders React elements using [`ReactDOMServer.renderToStaticMarkup()`](https://reactjs.org/docs/react-dom-server.html#rendertostaticmarkup) and sends the response as HTML.
 
-Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`, in which case you should add an `// @deno-types` comment to load the type definitions for React (see [deno_types](https://github.com/Soremwar/deno_types)).
+Save the code below to a file named `server.jsx` and run it with a command like `deno --allow-net server.jsx`. The `.jsx` extension is important, as it tells Deno to compile the JSX syntax. You can also use TypeScript by using `.tsx` instead of `.jsx`.
 
 ```tsx
 import React from 'https://esm.sh/react';

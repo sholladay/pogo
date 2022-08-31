@@ -107,13 +107,23 @@ export default class ServerResponse {
                 this.headers.set(name, value);
             }
         };
+
         if (React.isValidElement(this.body)) {
             this.body = ReactDOMServer.renderToStaticMarkup(this.body);
         }
+        /**
+         * A file object with a ReadableStream attached to it, e.g. from Deno.open().
+         * Deno will automatically clean up the resource when the stream is finished.
+         */
+        else if (this.body instanceof Deno.FsFile) {
+            this.body = this.body.readable;
+        }
+
         if (typeof this.body === 'string') {
             const mediaType = this.body ? 'text/html' : 'text/plain';
             defaultHeader('content-type', mediaType + '; charset=utf-8');
         }
+        // Types that Response supports natively
         else if (
             this.body === null ||
             this.body === undefined ||
@@ -122,7 +132,7 @@ export default class ServerResponse {
             this.body instanceof URLSearchParams ||
             this.body instanceof ReadableStream ||
             this.body instanceof Uint8Array) {
-            // Let Deno handle it natively
+            // No action needed
         }
         else if (['object', 'number', 'boolean'].includes(typeof this.body)) {
             defaultHeader('content-type', 'application/json; charset=utf-8');
