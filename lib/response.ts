@@ -3,7 +3,6 @@ import {
     ReactDOMServer,
     cookie,
     status,
-    statusText
  } from '../dependencies.ts';
 import { Bang } from './bang.ts';
 import { ResponseBody } from './types.ts';
@@ -139,13 +138,7 @@ export default class ServerResponse {
             this.body = JSON.stringify(this.body);
         }
         else {
-            this.status = status.InternalServerError;
-            this.headers.set('content-type', 'application/json; charset=utf-8');
-            this.body = JSON.stringify({
-                error   : statusText.get(status.InternalServerError),
-                message : statusText.get(status.InternalServerError),
-                status  : status.InternalServerError
-            });
+            throw bang.badImplementation('Unable to create response due to unsupported body type');
         }
 
         return new Response(this.body, {
