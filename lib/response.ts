@@ -3,8 +3,9 @@ import {
     ReactDOMServer,
     cookie,
     status,
+    streams
  } from '../dependencies.ts';
-import { Bang } from './bang.ts';
+import * as bang from './bang.ts';
 import { ResponseBody } from './types.ts';
 
 interface ResponseOptions {
@@ -16,6 +17,14 @@ interface ResponseOptions {
 interface CookieOptions extends Omit<cookie.Cookie, 'name'> {
     name?: cookie.Cookie['name']
 }
+
+const hasReadableStream = (input: any): input is { readable: ReadableStream } => {
+    return input?.readable instanceof ReadableStream;
+};
+
+const isReader = (input: any): input is Deno.Reader => {
+    return typeof input?.read === 'function';
+};
 
 /**
  * A response represents an outgoing message that will be returned by your server for a corresponding request.
@@ -29,7 +38,7 @@ export default class ServerResponse {
     temporary?: () => this;
     rewritable?: (isRewritable?: boolean) => this;
     constructor(options?: ResponseOptions) {
-        this.body = typeof options?.body === 'undefined' ? null : options?.body;
+        this.body = options?.body === undefined ? null : options?.body;
         this.headers = new Headers(options?.headers);
         this.status = options?.status ?? status.OK;
     }
@@ -38,7 +47,7 @@ export default class ServerResponse {
             return input;
         }
         if (input instanceof Error) {
-            return Bang.wrap(input).response;
+            return bang.Bang.wrap(input).response;
         }
         return new ServerResponse({ body : input });
     }
@@ -111,11 +120,16 @@ export default class ServerResponse {
             this.body = ReactDOMServer.renderToStaticMarkup(this.body);
         }
         /**
-         * A file object with a ReadableStream attached to it, e.g. from Deno.open().
-         * Deno will automatically clean up the resource when the stream is finished.
+         * This is to support non-standard streams that, by convention, have a property
+         * to access them as a web standard stream. Examples include Deno.stdin and
+         * Deno.FsFile objects, such as those returned by Deno.open(). Note that
+         * Deno will automatically close the resource when the stream is finished.
          */
-        else if (this.body instanceof Deno.FsFile) {
+        else if (hasReadableStream(this.body)) {
             this.body = this.body.readable;
+        }
+        else if (isReader(this.body)) {
+            this.body = streams.readableStreamFromReader(this.body);
         }
 
         if (typeof this.body === 'string') {
@@ -126,14 +140,20 @@ export default class ServerResponse {
         else if (
             this.body === null ||
             this.body === undefined ||
+            this.body instanceof ArrayBuffer ||
+            ArrayBuffer.isView(this.body) ||
             this.body instanceof Blob ||
             this.body instanceof FormData ||
-            this.body instanceof URLSearchParams ||
             this.body instanceof ReadableStream ||
-            this.body instanceof Uint8Array) {
+            this.body instanceof URLSearchParams
+        ) {
             // No action needed
         }
-        else if (['object', 'number', 'boolean'].includes(typeof this.body)) {
+        else if (
+            typeof this.body === 'object' ||
+            typeof this.body === 'number' ||
+            typeof this.body === 'boolean'
+        ) {
             defaultHeader('content-type', 'application/json; charset=utf-8');
             this.body = JSON.stringify(this.body);
         }

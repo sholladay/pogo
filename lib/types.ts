@@ -26,8 +26,8 @@ export interface MatchedRoute extends NormalizedRoute {
     params: RequestParams
 }
 
-type JSONStringifyable = boolean | null | number | object | string;
-export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
+type JSONStringifyable = boolean | null | number | string | { [key: string]: any };
+export type ResponseBody = Deno.Reader | BodyInit | JSONStringifyable;
 export type RouteHandlerResult = ServerResponse | ResponseBody | Error | Promise<ServerResponse | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
 

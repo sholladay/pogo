@@ -4,6 +4,7 @@ import * as cookie from 'https://deno.land/std@0.132.0/http/cookie.ts';
 import * as http from 'https://deno.land/std@0.132.0/http/server.ts';
 import * as path from 'https://deno.land/std@0.132.0/path/mod.ts';
 import { Status as status, STATUS_TEXT as statusText } from 'https://deno.land/std@0.132.0/http/http_status.ts';
+import * as streams from 'https://deno.land/std@0.132.0/streams/conversion.ts';
 import * as mime from 'https://esm.sh/mime-types@2.1.35';
 
 export {
@@ -14,5 +15,6 @@ export {
     mime,
     path,
     status,
-    statusText
+    statusText,
+    streams
 };
