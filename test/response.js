@@ -12,13 +12,10 @@ test('response.code() set status code', async () => {
             return h.response('hi').code(418);
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 418);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(response.body, 'hi');
+    assertStrictEquals(await response.text(), 'hi');
 });
 
 test('response.created() set status and location', async () => {
@@ -37,22 +34,16 @@ test('response.created() set status and location', async () => {
             return h.response('two').created('/yay');
         }
     });
-    const responseNoLocation = await server.inject({
-        method : 'GET',
-        url    : '/no-location'
-    });
-    const responseWithLocation = await server.inject({
-        method : 'GET',
-        url    : '/with-location'
-    });
+    const responseNoLocation = await server.inject('/no-location');
+    const responseWithLocation = await server.inject('/with-location');
     assertStrictEquals(responseNoLocation.status, 201);
     assertStrictEquals(responseNoLocation.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEquals(responseNoLocation.headers.has('location'), false);
-    assertStrictEquals(responseNoLocation.body, 'one');
+    assertStrictEquals(await responseNoLocation.text(), 'one');
     assertStrictEquals(responseWithLocation.status, 201);
     assertStrictEquals(responseWithLocation.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEquals(responseWithLocation.headers.get('location'), '/yay');
-    assertStrictEquals(responseWithLocation.body, 'two');
+    assertStrictEquals(await responseWithLocation.text(), 'two');
 });
 
 test('response.header() set custom header', async () => {
@@ -64,14 +55,11 @@ test('response.header() set custom header', async () => {
             return h.response('hi').header('x-dog', 'woof');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEquals(response.headers.get('x-dog'), 'woof');
-    assertStrictEquals(response.body, 'hi');
+    assertStrictEquals(await response.text(), 'hi');
 });
 
 test('response.location() set location header', async () => {
@@ -83,14 +71,11 @@ test('response.location() set location header', async () => {
             return h.response('hi').location('/over-the-rainbow');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
     assertStrictEquals(response.headers.get('location'), '/over-the-rainbow');
-    assertStrictEquals(response.body, 'hi');
+    assertStrictEquals(await response.text(), 'hi');
 });
 
 test('response.state() set cookie', async () => {
@@ -102,14 +87,11 @@ test('response.state() set cookie', async () => {
             return h.response('').state('sesh', 'nomnomnom');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
-    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('content-type'), 'text/plain; charset=utf-8');
     assertStrictEquals(response.headers.get('set-cookie'), 'sesh=nomnomnom; Secure; HttpOnly; SameSite=Strict');
-    assertStrictEquals(response.body, '');
+    assertStrictEquals(await response.text(), '');
 });
 
 test('response.type() override default content-type handling', async () => {
@@ -121,13 +103,10 @@ test('response.type() override default content-type handling', async () => {
             return h.response({ hello : 'world' }).type('weird/type');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'weird/type');
-    assertStrictEquals(response.body, JSON.stringify({ hello : 'world' }));
+    assertStrictEquals(await response.text(), JSON.stringify({ hello : 'world' }));
 });
 
 test('response.unstate() clear cookie', async () => {
@@ -139,12 +118,9 @@ test('response.unstate() clear cookie', async () => {
             return h.response('').unstate('mwahaha');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
-    assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assertStrictEquals(response.headers.get('content-type'), 'text/plain; charset=utf-8');
     assertStrictEquals(response.headers.get('set-cookie'), 'mwahaha=; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-    assertStrictEquals(response.body, '');
+    assertStrictEquals(await response.text(), '');
 });

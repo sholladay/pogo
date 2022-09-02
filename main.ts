@@ -37,7 +37,7 @@ export const file = (path: string, options?: FileHandlerOptions): RouteHandler =
 /**
  * Returns a new instance of the Server class
  */
-export const server = (options: ServerOptions): Server => {
+export const server = (options?: ServerOptions): Server => {
     return new Server(options);
 };
 

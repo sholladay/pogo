@@ -1,7 +1,7 @@
 import directory, { DirectoryHandlerOptions } from './helpers/directory.tsx';
 import file, { FileHandlerOptions } from './helpers/file.ts';
-import Request from './request.ts';
-import Response from './response.ts';
+import ServerRequest from './request.ts';
+import ServerResponse from './response.ts';
 import { ResponseBody } from './types.ts';
 
 /**
@@ -9,22 +9,22 @@ import { ResponseBody } from './types.ts';
  * Pogo passes a toolkit instance as the second argument to route handlers.
  */
 export default class Toolkit {
-    request: Request
-    constructor(request: Request) {
+    request: ServerRequest
+    constructor(request: ServerRequest) {
         this.request = request;
     }
-    async file(path: string, options?: FileHandlerOptions): Promise<Response> {
+    async file(path: string, options?: FileHandlerOptions): Promise<ServerResponse> {
         return file(path, options);
     }
-    async directory(path: string, options?: DirectoryHandlerOptions): Promise<Response> {
+    async directory(path: string, options?: DirectoryHandlerOptions): Promise<ServerResponse> {
         const lastParamName = this.request.route.paramNames[this.request.route.paramNames.length - 1];
         const filePath = this.request.params[lastParamName];
         return directory(path, filePath, options);
     }
-    response(body?: ResponseBody): Response {
-        return new Response({ body });
+    response(input?: ServerResponse | ResponseBody | Error): ServerResponse {
+        return ServerResponse.wrap(input);
     }
-    redirect(url: string): Response {
+    redirect(url: string | URL): ServerResponse {
         return this.response().redirect(url);
     }
 }

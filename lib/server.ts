@@ -1,8 +1,7 @@
 import { http } from '../dependencies.ts';
 import * as bang from './bang.ts';
-import serialize from './serialize.ts';
-import Request from './request.ts';
-import Response from './response.ts';
+import ServerRequest from './request.ts';
+import ServerResponse from './response.ts';
 import Toolkit from './toolkit.ts';
 import Router, {
     RoutesList,
@@ -17,12 +16,21 @@ import Router, {
     RouteOptionsHasHandlerAndPath,
     RouteOptionsHasMethod,
     RouteOptionsHasMethodAndPath,
-    RouteOptionsHasPath
+    RouteOptionsHasPath,
+    toSignature
 } from './router.ts';
-import { RouteHandler, RouteOptions, ServerOptions } from './types.ts';
+import { ResponseBody, RouteHandler, RouteOptions } from './types.ts';
 
-const getPathname = (path: string): string => {
-    return new URL(path, 'invalid:/').pathname;
+export interface ServerOptions {
+    catchAll?: RouteHandler,
+    certFile?: string,
+    hostname?: string,
+    keyFile?: string,
+    port?: number
+}
+
+const serialize = (input: ServerResponse | ResponseBody | Error): Response => {
+    return ServerResponse.wrap(input).toWeb();
 };
 
 /**
@@ -31,46 +39,53 @@ const getPathname = (path: string): string => {
  */
 export default class Server {
     options: ServerOptions;
-    raw?: http.Server;
+    raw: http.Server;
     router: Router;
-    constructor(options: ServerOptions) {
+    url: URL;
+    constructor(options?: ServerOptions) {
         this.options = {
             hostname : 'localhost',
+            port     : options?.certFile ? 443 : 80,
             ...options
         };
+        this.raw = new http.Server({
+            handler : (request) => {
+                return this.inject(request);
+            },
+            hostname : this.options.hostname,
+            port     : this.options.port
+        });
+        this.url = new URL((this.options.certFile ? 'https://' : 'http://') + this.options.hostname + ':' + this.options.port);
         this.router = new Router();
         const { catchAll } = this.options;
         if (typeof catchAll === 'function') {
             this.router.all('/{catchAll*}', catchAll);
         }
     }
-    async inject(rawRequest: http.ServerRequest): Promise<Response> {
-        const route = this.router.lookup(rawRequest.method, getPathname(rawRequest.url));
-
+    async inject(request: Request | string | URL): Promise<Response> {
+        const rawRequest = request instanceof Request ? request : new Request(new URL(request.toString(), this.url).toString());
+        const url = new URL(rawRequest.url);
+        const route = this.router.lookup(rawRequest.method, url.pathname, url.hostname);
         if (!route) {
             return serialize(bang.notFound());
         }
 
-        const request = new Request({
+        const serverRequest = new ServerRequest({
             raw    : rawRequest,
             route,
             server : this
         });
 
         try {
-            return serialize(await route.handler(request, new Toolkit(request)));
+            const result = await route.handler(serverRequest, new Toolkit(serverRequest));
+            if (typeof result === 'undefined') {
+                throw bang.badImplementation(`Handler for ${toSignature(route)} returned undefined which is not allowed, return null or h.response() instead to explicitly send an empty response`);
+            }
+            return serialize(result);
         }
         catch (error) {
-            return serialize(bang.Bang.wrap(error));
+            return serialize(error);
         }
-    }
-    async respond(request: http.ServerRequest) {
-        const response = await this.inject(request);
-        request.respond({
-            body    : response.body ?? undefined,
-            headers : response.headers,
-            status  : response.status
-        } as http.Response);
     }
     route(route: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler): this;
     route(route: RoutesListHasMethodAndPath, options: RouteOptionsHasHandler | RouteHandler, handler?: RouteHandler): this;
@@ -86,21 +101,15 @@ export default class Server {
         return this;
     }
     async start() {
-        const { certFile, keyFile, ...options } = this.options;
-        const server = (typeof certFile === 'string' && typeof keyFile === 'string') ?
-            http.serveTLS({
-                ...options,
-                certFile,
-                keyFile
-            }) :
-            http.serve(options);
-        this.raw = server;
-        for await (const request of server) {
-            // NOTE: Do not `await` here (handle requests concurrently for performance)
-            this.respond(request);
+        const { certFile, keyFile } = this.options;
+        if (certFile && keyFile) {
+            await this.raw.listenAndServeTls(certFile, keyFile);
+        }
+        else {
+            await this.raw.listenAndServe();
         }
     }
     async stop() {
-        this.raw?.close();
+        this.raw.close();
     }
 }
