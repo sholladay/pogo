@@ -171,7 +171,7 @@ test('my app works', async () => {
     });
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(response.body, 'Hello, World!');
+    assertStrictEquals(await response.text(), 'Hello, World!');
 });
 ```
 
