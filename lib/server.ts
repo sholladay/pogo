@@ -84,6 +84,7 @@ export default class Server {
             return serialize(result);
         }
         catch (error) {
+            console.error(error);
             return serialize(error);
         }
     }
