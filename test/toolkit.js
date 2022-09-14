@@ -1,4 +1,4 @@
-import { assertEquals, assertStrictEquals, assertStringContains } from '../dev-dependencies.ts';
+import { assertEquals, assertStrictEquals, assertStringIncludes } from '../dev-dependencies.ts';
 import pogo from '../main.ts';
 
 const { test } = Deno;
@@ -12,13 +12,10 @@ test('h.response() set JSON body', async () => {
             return h.response({ hello : 'world' });
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({ hello : 'world' }));
+    assertStrictEquals(await response.text(), JSON.stringify({ hello : 'world' }));
 });
 
 test('h.redirect()', async () => {
@@ -51,38 +48,26 @@ test('h.redirect()', async () => {
             return h.redirect('/four').permanent().rewritable(false);
         }
     });
-    const responseOne = await server.inject({
-        method : 'GET',
-        url    : '/redirect'
-    });
-    const responseTwo = await server.inject({
-        method : 'GET',
-        url    : '/redirect-no-rewrite'
-    });
-    const responseThree = await server.inject({
-        method : 'GET',
-        url    : '/permanent'
-    });
-    const responseFour = await server.inject({
-        method : 'GET',
-        url    : '/permanent-no-rewrite'
-    });
+    const responseOne = await server.inject('/redirect');
+    const responseTwo = await server.inject('/redirect-no-rewrite');
+    const responseThree = await server.inject('/permanent');
+    const responseFour = await server.inject('/permanent-no-rewrite');
     assertStrictEquals(responseOne.status, 302);
     assertStrictEquals(responseOne.headers.get('content-type'), null);
     assertStrictEquals(responseOne.headers.get('location'), '/one');
-    assertStrictEquals(responseOne.body, '');
+    assertStrictEquals(await responseOne.text(), '');
     assertStrictEquals(responseTwo.status, 307);
     assertStrictEquals(responseTwo.headers.get('content-type'), null);
     assertStrictEquals(responseTwo.headers.get('location'), '/two');
-    assertStrictEquals(responseTwo.body, '');
+    assertStrictEquals(await responseTwo.text(), '');
     assertStrictEquals(responseThree.status, 301);
     assertStrictEquals(responseThree.headers.get('content-type'), null);
     assertStrictEquals(responseThree.headers.get('location'), '/three');
-    assertStrictEquals(responseThree.body, '');
+    assertStrictEquals(await responseThree.text(), '');
     assertStrictEquals(responseFour.status, 308);
     assertStrictEquals(responseFour.headers.get('content-type'), null);
     assertStrictEquals(responseFour.headers.get('location'), '/four');
-    assertStrictEquals(responseFour.body, '');
+    assertStrictEquals(await responseFour.text(), '');
 });
 
 test('h.file()', async () => {
@@ -94,13 +79,10 @@ test('h.file()', async () => {
             return h.file('./test/fixture/names.json');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/names'
-    });
+    const response = await server.inject('/names');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
+    assertStrictEquals(await response.text(), '[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n');
 });
 
 test('h.file() outside default confine', async () => {
@@ -112,13 +94,10 @@ test('h.file() outside default confine', async () => {
             return h.file('/etc/hosts');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/forbid'
-    });
+    const response = await server.inject('/forbid');
     assertStrictEquals(response.status, 403);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Forbidden',
         message : 'Forbidden',
         status  : 403
@@ -134,13 +113,10 @@ test('h.directory() serve files', async () => {
             return h.directory('./test/fixture');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/dirtest/names.json'
-    });
+    const response = await server.inject('/dirtest/names.json');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, new TextEncoder().encode('[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n'));
+    assertStrictEquals(await response.text(), '[\n    "Alice",\n    "Bob",\n    "Cara"\n]\n');
 });
 
 test('h.directory() forbids listing by default', async () => {
@@ -152,13 +128,10 @@ test('h.directory() forbids listing by default', async () => {
             return h.directory('./test/fixture');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/dirtest/'
-    });
+    const response = await server.inject('/dirtest/');
     assertStrictEquals(response.status, 403);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Forbidden',
         message : 'Forbidden',
         status  : 403
@@ -174,14 +147,12 @@ test('h.directory() listing with relative path', async () => {
             return h.directory('./test/fixture', {listing: true});
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/dirtest/'
-    });
+    const response = await server.inject('/dirtest/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStringContains(response.body, '<html>');
-    assertStringContains(response.body, 'names.json');
+    const responseText = await response.text();
+    assertStringIncludes(responseText, '<html>');
+    assertStringIncludes(responseText, 'names.json');
 });
 
 test('h.directory() listing with partial relative path', async () => {
@@ -193,12 +164,10 @@ test('h.directory() listing with partial relative path', async () => {
             return h.directory('test/fixture', {listing: true});
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/dirtest/'
-    });
+    const response = await server.inject('/dirtest/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStringContains(response.body, '<html>');
-    assertStringContains(response.body, 'names.json');
+    const responseText = await response.text();
+    assertStringIncludes(responseText, '<html>');
+    assertStringIncludes(responseText, 'names.json');
 });

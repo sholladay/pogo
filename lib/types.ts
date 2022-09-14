@@ -1,5 +1,5 @@
 import Request from './request.ts';
-import Response from './response.ts';
+import ServerResponse from './response.ts';
 import Toolkit from './toolkit.ts';
 
 export interface Route {
@@ -10,6 +10,7 @@ export interface Route {
 }
 
 export type RequestParams = { [param: string]: string };
+export type RequestState = { [name: string]: string };
 
 export interface RouteOptions extends Omit<Partial<Route>, 'method' | 'path'> {
     method?: Route['method'] | Iterable<Route['method']>,
@@ -25,18 +26,11 @@ export interface MatchedRoute extends NormalizedRoute {
     params: RequestParams
 }
 
-export interface ServerOptions {
-    catchAll?: RouteHandler,
-    certFile?: string,
-    hostname?: string,
-    keyFile?: string,
-    port: number
-}
-
-type JSONStringifyable = boolean | null | number | object | string;
-export type ResponseBody = Deno.Reader | Uint8Array | JSONStringifyable;
-export type RouteHandlerResult = Response | ResponseBody | Error | Promise<Response | ResponseBody | Error>;
+type JSONStringifyable = boolean | null | number | string | { [key: string]: any };
+export type ResponseBody = Deno.Reader | BodyInit | JSONStringifyable;
+export type RouteHandlerResult = ServerResponse | ResponseBody | Error | Promise<ServerResponse | ResponseBody | Error>;
 export type RouteHandler = (request: Request, h: Toolkit) => RouteHandlerResult;
 
-export { FileHandlerOptions } from './helpers/file.ts';
-export { DirectoryHandlerOptions } from './helpers/directory.tsx';
+export type { ServerOptions } from './server.ts';
+export type { FileHandlerOptions } from './helpers/file.ts';
+export type { DirectoryHandlerOptions } from './helpers/directory.tsx';

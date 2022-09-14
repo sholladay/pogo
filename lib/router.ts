@@ -60,6 +60,9 @@ const toPathfinder = (segments: Array<string>): string => {
     return segments.map(replacePart).join('/');
 };
 
+/**
+ * Returns a human friendly text representation of the given route, such as GET /foo
+ */
 const toSignature = (route: NormalizedRoute): string => {
     return route.method + ' ' + (route.vhost || '') + route.path;
 };
@@ -115,7 +118,11 @@ interface RoutingTable {
     wildcards: Array<NormalizedRoute>
 }
 
-class Router {
+/**
+ * A router represents a collection of routes and determines which route will handle a given HTTP request.
+ * Use `pogo.router()` to create a router instance.
+ */
+export default class Router {
     routes: RoutingTable;
     constructor(route?: RoutesList, options?: RouteOptions | RouteHandler, handler?: RouteHandler) {
         this.routes = {
@@ -151,7 +158,7 @@ class Router {
 
         const normalizedRoute = {
             ...(typeof route === 'string' ? { path : route } : route),
-            ...(typeof options === 'function' ? { handler : options} : options),
+            ...(typeof options === 'function' ? { handler : options } : options),
             ...(handler ? { handler } : null)
         } as Route;
 
@@ -319,8 +326,8 @@ class Router {
                 if (!isHostMatch) {
                     return false;
                 }
-                // If there are no params, it's a static path
-                if (route.paramNames.length === 0) {
+                const isStaticPath = route.paramNames.length === 0;
+                if (isStaticPath) {
                     return route.path === path;
                 }
 
@@ -351,4 +358,6 @@ class Router {
     }
 }
 
-export default Router;
+export {
+    toSignature
+};

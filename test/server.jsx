@@ -16,14 +16,11 @@ test('server.route() HTML response for string', async () => {
             return 'hi';
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(called, true);
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(response.body, 'hi');
+    assertStrictEquals(await response.text(), 'hi');
 });
 
 test('server.route() HTML response for JSX', async () => {
@@ -37,14 +34,11 @@ test('server.route() HTML response for JSX', async () => {
             return <p>Supports JSX</p>;
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(called, true);
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(response.body, '<p>Supports JSX</p>');
+    assertStrictEquals(await response.text(), '<p>Supports JSX</p>');
 });
 
 test('server.route() returns Uint8Array', async () => {
@@ -58,14 +52,11 @@ test('server.route() returns Uint8Array', async () => {
             return new TextEncoder().encode('Hello');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(called, true);
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.has('content-type'), false);
-    assertEquals(response.body, new TextEncoder().encode('Hello'));
+    assertStrictEquals(await response.text(), 'Hello');
 });
 
 test('server.route() JSON response for plain object', async () => {
@@ -79,14 +70,11 @@ test('server.route() JSON response for plain object', async () => {
             return { foo : 'bar' };
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(called, true);
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({ foo : 'bar' }));
+    assertStrictEquals(await response.text(), JSON.stringify({ foo : 'bar' }));
 });
 
 test('server.route() JSON response for boolean', async () => {
@@ -105,20 +93,14 @@ test('server.route() JSON response for boolean', async () => {
             return true;
         }
     });
-    const responseFalse = await server.inject({
-        method : 'GET',
-        url    : '/false'
-    });
-    const responseTrue = await server.inject({
-        method : 'GET',
-        url    : '/true'
-    });
+    const responseFalse = await server.inject('/false');
+    const responseTrue = await server.inject('/true');
     assertStrictEquals(responseFalse.status, 200);
     assertStrictEquals(responseFalse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(responseFalse.body, JSON.stringify(false));
+    assertStrictEquals(await responseFalse.text(), JSON.stringify(false));
     assertStrictEquals(responseTrue.status, 200);
     assertStrictEquals(responseTrue.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(responseTrue.body, JSON.stringify(true));
+    assertStrictEquals(await responseTrue.text(), JSON.stringify(true));
 });
 
 test('server.route() JSON response for number', async () => {
@@ -137,20 +119,14 @@ test('server.route() JSON response for number', async () => {
             return 1;
         }
     });
-    const responseZero = await server.inject({
-        method : 'GET',
-        url    : '/zero'
-    });
-    const responseOne = await server.inject({
-        method : 'GET',
-        url    : '/one'
-    });
+    const responseZero = await server.inject('/zero');
+    const responseOne = await server.inject('/one');
     assertStrictEquals(responseZero.status, 200);
     assertStrictEquals(responseZero.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(responseZero.body, JSON.stringify(0));
+    assertStrictEquals(await responseZero.text(), JSON.stringify(0));
     assertStrictEquals(responseOne.status, 200);
     assertStrictEquals(responseOne.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(responseOne.body, JSON.stringify(1));
+    assertStrictEquals(await responseOne.text(), JSON.stringify(1));
 });
 
 test('server.route() empty response for null', async () => {
@@ -162,13 +138,10 @@ test('server.route() empty response for null', async () => {
             return null;
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.has('content-type'), false);
-    assertStrictEquals(response.body, '');
+    assertStrictEquals(await response.text(), '');
 });
 
 test('server.route() error response for undefined', async () => {
@@ -180,13 +153,10 @@ test('server.route() error response for undefined', async () => {
             return undefined;
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 500);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
@@ -202,13 +172,10 @@ test('server.route() with dynamic path', async () => {
             return request.params;
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/users/123'
-    });
+    const response = await server.inject('/users/123');
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({ userId : '123' }));
+    assertStrictEquals(await response.text(), JSON.stringify({ userId : '123' }));
 });
 
 test('server.route() can be chained', async () => {
@@ -228,20 +195,14 @@ test('server.route() can be chained', async () => {
                 return 'b';
             }
         });
-    const responseA = await server.inject({
-        method : 'GET',
-        url    : '/a'
-    });
-    const responseB = await server.inject({
-        method : 'GET',
-        url    : '/b'
-    });
+    const responseA = await server.inject('/a');
+    const responseB = await server.inject('/b');
     assertStrictEquals(responseA.status, 200);
     assertStrictEquals(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(responseA.body, 'a');
+    assertStrictEquals(await responseA.text(), 'a');
     assertStrictEquals(responseB.status, 200);
     assertStrictEquals(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(responseB.body, 'b');
+    assertStrictEquals(await responseB.text(), 'b');
 });
 
 test('server.route() array of routes', async () => {
@@ -262,20 +223,14 @@ test('server.route() array of routes', async () => {
             }
         }
     ]);
-    const responseA = await server.inject({
-        method : 'GET',
-        url    : '/a'
-    });
-    const responseB = await server.inject({
-        method : 'GET',
-        url    : '/b'
-    });
+    const responseA = await server.inject('/a');
+    const responseB = await server.inject('/b');
     assertStrictEquals(responseA.status, 200);
     assertStrictEquals(responseA.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(responseA.body, 'a');
+    assertStrictEquals(await responseA.text(), 'a');
     assertStrictEquals(responseB.status, 200);
     assertStrictEquals(responseB.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(responseB.body, 'b');
+    assertStrictEquals(await responseB.text(), 'b');
 });
 
 test('server.route() array of methods', async () => {
@@ -287,27 +242,18 @@ test('server.route() array of methods', async () => {
             return 'Hi, ' + request.method;
         }
     });
-    const getResponse = await server.inject({
-        method : 'GET',
-        url    : '/hello'
-    });
-    const postResponse = await server.inject({
-        method : 'POST',
-        url    : '/hello'
-    });
-    const putResponse = await server.inject({
-        method : 'PUT',
-        url    : '/hello'
-    });
+    const getResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'GET' }));
+    const postResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'POST' }));
+    const putResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'PUT' }));
     assertStrictEquals(getResponse.status, 200);
     assertStrictEquals(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(getResponse.body, 'Hi, GET');
+    assertStrictEquals(await getResponse.text(), 'Hi, GET');
     assertStrictEquals(postResponse.status, 200);
     assertStrictEquals(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(postResponse.body, 'Hi, POST');
+    assertStrictEquals(await postResponse.text(), 'Hi, POST');
     assertStrictEquals(putResponse.status, 404);
     assertStrictEquals(putResponse.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(putResponse.body, JSON.stringify({
+    assertStrictEquals(await putResponse.text(), JSON.stringify({
         error   : 'Not Found',
         message : 'Not Found',
         status  : 404
@@ -323,27 +269,18 @@ test('server.route() wildcard method', async () => {
             return 'Hi, ' + request.method;
         }
     });
-    const getResponse = await server.inject({
-        method : 'GET',
-        url    : '/hello'
-    });
-    const postResponse = await server.inject({
-        method : 'POST',
-        url    : '/hello'
-    });
-    const putResponse = await server.inject({
-        method : 'PUT',
-        url    : '/hello'
-    });
+    const getResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'GET' }));
+    const postResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'POST' }));
+    const putResponse = await server.inject(new Request(new URL('/hello', server.url), { method : 'PUT' }));
     assertStrictEquals(getResponse.status, 200);
     assertStrictEquals(getResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(getResponse.body, 'Hi, GET');
+    assertStrictEquals(await getResponse.text(), 'Hi, GET');
     assertStrictEquals(postResponse.status, 200);
     assertStrictEquals(postResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(postResponse.body, 'Hi, POST');
+    assertStrictEquals(await postResponse.text(), 'Hi, POST');
     assertStrictEquals(putResponse.status, 200);
     assertStrictEquals(putResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(putResponse.body, 'Hi, PUT');
+    assertStrictEquals(await putResponse.text(), 'Hi, PUT');
 });
 
 test('server.route() handler returns Error', async () => {
@@ -355,13 +292,10 @@ test('server.route() handler returns Error', async () => {
             return new Error('Crazyyy');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 500);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
@@ -377,13 +311,10 @@ test('server.route() handler throws Error', async () => {
             throw new Error('Crazyyy');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 500);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Internal Server Error',
         message : 'Internal Server Error',
         status  : 500
@@ -399,13 +330,10 @@ test('server.route() handler returns bang.badRequest()', async () => {
             return bang.badRequest('Crazyyy');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 400);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Bad Request',
         message : 'Crazyyy',
         status  : 400
@@ -421,13 +349,10 @@ test('server.route() handler throws bang.badRequest()', async () => {
             throw bang.badRequest('Crazyyy');
         }
     });
-    const response = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
+    const response = await server.inject('/');
     assertStrictEquals(response.status, 400);
     assertStrictEquals(response.headers.get('content-type'), 'application/json; charset=utf-8');
-    assertStrictEquals(response.body, JSON.stringify({
+    assertStrictEquals(await response.text(), JSON.stringify({
         error   : 'Bad Request',
         message : 'Crazyyy',
         status  : 400
@@ -447,32 +372,20 @@ test('server catchAll option', async () => {
             return 'Hi, ' + request.method;
         }
     });
-    const getHelloResponse = await server.inject({
-        method : 'GET',
-        url    : '/hello'
-    });
-    const getRootResponse = await server.inject({
-        method : 'GET',
-        url    : '/'
-    });
-    const getVoidResponse = await server.inject({
-        method : 'GET',
-        url    : '/void'
-    });
-    const postVoidResponse = await server.inject({
-        method : 'POST',
-        url    : '/void'
-    });
+    const getHelloResponse = await server.inject('/hello');
+    const getRootResponse = await server.inject('/');
+    const getVoidResponse = await server.inject('/void');
+    const postVoidResponse = await server.inject(new Request(new URL('/void', server.url), { method : 'POST' }));
     assertStrictEquals(getHelloResponse.status, 200);
     assertStrictEquals(getHelloResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(getHelloResponse.body, 'Hi, GET');
+    assertStrictEquals(await getHelloResponse.text(), 'Hi, GET');
     assertStrictEquals(getRootResponse.status, 418);
     assertStrictEquals(getRootResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(getRootResponse.body, 'Custom fallback, GET');
+    assertStrictEquals(await getRootResponse.text(), 'Custom fallback, GET');
     assertStrictEquals(getVoidResponse.status, 418);
     assertStrictEquals(getVoidResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(getVoidResponse.body, 'Custom fallback, GET');
+    assertStrictEquals(await getVoidResponse.text(), 'Custom fallback, GET');
     assertStrictEquals(postVoidResponse.status, 418);
     assertStrictEquals(postVoidResponse.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(postVoidResponse.body, 'Custom fallback, POST');
+    assertStrictEquals(await postVoidResponse.text(), 'Custom fallback, POST');
 });
