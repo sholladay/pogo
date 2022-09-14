@@ -1,5 +1,5 @@
-import React from "https://dev.jspm.io/react";
-import ReactDOM from "https://dev.jspm.io/react-dom";
+import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
 
 export {
     React,
