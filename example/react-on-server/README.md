@@ -3,8 +3,8 @@
 This is an example Pogo app with React server-side rendering static HTML pages (i.e. webpage templating).
 
 Based on [simple server](../simple-server), with the following changes:
- - Added [`main.tsx`](./main.tsx) JSX with React .
- - Created and used React component [Post](./post.tsx) with passing props.
+ - Moved `main.ts` to [`main.tsx`](./main.tsx) to use React with JSX.
+ - Added a [`Post`](./post.tsx) component.
  - Used `interface` for type definition of component `props`.
 
 ## Run the example
