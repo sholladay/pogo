@@ -1,6 +1,7 @@
 import React from 'https://esm.sh/react@18.2.0';
 import ReactDOMServer from 'https://esm.sh/react-dom@18.2.0/server';
-import * as cookie from 'https://deno.land/std@0.154.0/http/cookie.ts';
+import * as cookie from 'https://deno.land/std@0.154.0/http/cookie_map.ts';
+import * as crypto from 'https://deno.land/std@0.154.0/crypto/keystack.ts';
 import * as http from 'https://deno.land/std@0.154.0/http/server.ts';
 import * as path from 'https://deno.land/std@0.154.0/path/mod.ts';
 import { Status as status, STATUS_TEXT as statusText } from 'https://deno.land/std@0.154.0/http/http_status.ts';
@@ -11,6 +12,7 @@ export {
     React,
     ReactDOMServer,
     cookie,
+    crypto,
     http,
     mime,
     path,

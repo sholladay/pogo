@@ -1,4 +1,4 @@
-import { http } from '../dependencies.ts';
+import { cookie, crypto, http } from '../dependencies.ts';
 import * as bang from './bang.ts';
 import ServerRequest from './request.ts';
 import ServerResponse from './response.ts';
@@ -26,7 +26,8 @@ export interface ServerOptions {
     certFile?: string,
     hostname?: string,
     keyFile?: string,
-    port?: number
+    port?: number,
+    sessionKeys?: Iterable<crypto.Key>
 }
 
 const serialize = (input: ServerResponse | ResponseBody | Error): Response => {
@@ -34,20 +35,31 @@ const serialize = (input: ServerResponse | ResponseBody | Error): Response => {
 };
 
 /**
+ * The default session key is meant to be stable across server restarts for up to one day,
+ * for convenience during development, while still providing some limited protection if
+ * mistakenly shipped to production.
+ */
+const defaultSessionKey = Deno.build.target + ' ' + new Date().toDateString();
+
+/**
  * A server represents your application and its ability to handle HTTP requests.
  * Use `pogo.server()` to create a server instance.
  */
 export default class Server {
-    options: ServerOptions;
+    options: ServerOptions & Required<Pick<ServerOptions, 'sessionKeys'>>;
     raw: http.Server;
     router: Router;
     url: URL;
     constructor(options?: ServerOptions) {
         this.options = {
-            hostname : 'localhost',
-            port     : options?.certFile ? 443 : 80,
+            hostname    : 'localhost',
+            port        : options?.certFile ? 443 : 80,
+            sessionKeys : [defaultSessionKey],
             ...options
         };
+        if (typeof this.options.sessionKeys === 'string') {
+            this.options.sessionKeys = [this.options.sessionKeys];
+        }
         this.raw = new http.Server({
             handler : (request) => {
                 return this.inject(request);
@@ -69,6 +81,11 @@ export default class Server {
         if (!route) {
             return serialize(bang.notFound());
         }
+
+        const cookies = new cookie.SecureCookieMap(rawRequest, {
+            keys   : new crypto.KeyStack(this.options.sessionKeys),
+            secure : Boolean(this.options.certFile)
+        });
 
         const serverRequest = new ServerRequest({
             raw    : rawRequest,
