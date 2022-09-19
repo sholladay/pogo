@@ -681,6 +681,33 @@ response.state('color', { value : 'blue' });
 response.state({ name : 'color', value : 'blue' });
 ```
 
+It is strongly recommended that you use `'__Host-'` or `'__Secure-'` as a prefix for your cookie name, if possible. This will enable additional checks in the browser to ensure that your cookie is secure. Using `'__Host-'` requires setting the cookie's `path` option to `'/'`. See [Cookie Name Prefixes](https://httpwg.org/http-extensions/draft-ietf-httpbis-rfc6265bis.html#section-4.1.3) for details.
+
+```ts
+response.state('__Host-session', {
+    path  : '/'
+    value : '1234'
+});
+```
+
+Default cookie options:
+
+| Option name | Default value |
+| ----------- | ------------- |
+| `httpOnly`  | `true`        |
+| `sameSite`  | `'Strict'`    |
+| `secure`    | `true`        |
+
+Note that while `sameSite` defaults to `'Strict'` for security, it causes the cookie to _only_ be sent when the user is already navigating within your site or goes there directly. If instead the user is on another site and follows a link or is redirected to your site, then the cookie will not be sent. Thus, if a logged in user clicks a link to your site from a search engine, for example, it may appear to the user as if they were logged out, until they refresh the page. To improve the user experience for these scenarios, it is common to set `sameSite` to `'Lax'`.
+
+```ts
+response.state('__Host-session', {
+    path     : '/',
+    sameSite : 'Lax',
+    value    : '1234'
+});
+```
+
 #### response.status
 
 Type: `number`\
