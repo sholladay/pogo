@@ -1,3 +1,9 @@
+<div align="center">
+	<br />
+	<img width="350" height="350" src="media/logo.svg" alt="Pogo logo with a dinosaur on a pogo stick">
+    <br />
+</div>
+
 # pogo [![Build status for Pogo](https://travis-ci.com/sholladay/pogo.svg?branch=master "Build Status")](https://app.travis-ci.com/sholladay/pogo "Builds") [![TypeScript documentation for Pogo](https://doc.deno.land/badge.svg "TypeScript Docs")](https://deno.land/x/pogo/main.ts "TypeScript Docs")
 
 > Server framework for [Deno](https://deno.land)
