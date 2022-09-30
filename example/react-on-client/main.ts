@@ -1,5 +1,5 @@
+import { RouteHandler } from './client/dependencies.ts';
 import { pogo } from './dependencies.ts';
-import { RouteHandler } from 'https://deno.land/x/pogo/lib/types.ts'
 
 const server = pogo.server({ port : 3000 });
 const handler: RouteHandler = (request, h) => {

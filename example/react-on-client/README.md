@@ -7,19 +7,7 @@ Based on [Simple Server](../simple-server), with the following changes:
  - Added a [`client`](./client) directory with frontend modules such as [`client/app.jsx`](./client/app.jsx)
  - Added [`client/counter.jsx`](./client/counter.jsx), a counter component that uses `React.useState`
 
-## Run the example
-
-*Make sure [Deno](https://deno.land/) is installed and up to date.*
-
-### Remote
-
-The fastest way to run the example is to use its URL:
-
-```sh
-deno -A https://deno.land/x/pogo/example/react-on-client/run.ts
-```
-
-### Local
+### Run Locally
 
 Alternatively, if you want to play around with the example, run it from a local file:
 
