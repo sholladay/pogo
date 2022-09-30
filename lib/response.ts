@@ -117,7 +117,7 @@ export default class ServerResponse {
         };
 
         if (React.isValidElement(this.body)) {
-            this.body = ReactDOMServer.renderToStaticMarkup(this.body);
+            this.body = '<!DOCTYPE html>' + ReactDOMServer.renderToStaticMarkup(this.body);
         }
         /**
          * This is to support non-standard streams that, by convention, have a property

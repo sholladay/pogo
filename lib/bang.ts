@@ -3,7 +3,7 @@ import ServerResponse from './response.ts';
 
 export interface BangOptions extends ErrorOptions {
     ctor?: () => Bang,
-    status?: number
+    status?: status
 }
 
 export interface MethodNotAllowedOptions extends BangOptions {
@@ -17,7 +17,7 @@ const toOptions = (options?: BangOptions | Error): BangOptions => {
 const shortcut = (
     message: string | Error | undefined,
     options: BangOptions | Error | undefined,
-    status: number,
+    status: status,
     ctor: () => Bang
 ) => {
     return new Bang(message, {
@@ -33,7 +33,7 @@ export class Bang extends Error {
     constructor(message?: string | Error, options?: BangOptions | Error) {
         options = toOptions(options);
         const code = options.status ?? status.InternalServerError;
-        const msg = (typeof message === 'string' ? message : '') || statusText.get(code);
+        const msg = (typeof message === 'string' ? message : '') || statusText[code];
         const cause = options.cause || (message instanceof Error ? message : undefined);
         const ctor = typeof options.ctor === 'function' ? options.ctor : Bang;
 
@@ -43,8 +43,8 @@ export class Bang extends Error {
         this.response = new ServerResponse({
             status : code,
             body   : {
-                error   : statusText.get(code),
-                message : code === status.InternalServerError ? statusText.get(code) : this.message,
+                error   : statusText[code],
+                message : code === status.InternalServerError ? statusText[code] : this.message,
                 status  : code
             }
         });

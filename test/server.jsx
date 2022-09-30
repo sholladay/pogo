@@ -38,7 +38,7 @@ test('server.route() HTML response for JSX', async () => {
     assertStrictEquals(called, true);
     assertStrictEquals(response.status, 200);
     assertStrictEquals(response.headers.get('content-type'), 'text/html; charset=utf-8');
-    assertStrictEquals(await response.text(), '<p>Supports JSX</p>');
+    assertStrictEquals(await response.text(), '<!DOCTYPE html><p>Supports JSX</p>');
 });
 
 test('server.route() returns Uint8Array', async () => {
