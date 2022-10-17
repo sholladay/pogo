@@ -4,8 +4,7 @@ import { RouteHandler } from 'https://deno.land/x/pogo/lib/types.ts'
 
 export {
     React,
-    ReactDOM,
-}
+    ReactDOM
+};
 
-
-export type { RouteHandler }
+export type { RouteHandler };
