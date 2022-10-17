@@ -11,3 +11,4 @@ To run an example quickly, use `deno run -A https://deno.land/x/pogo/example/<na
  - [Hello World](./hello-world)
  - [Simple Server](./simple-server)
  - [React on Server](./react-on-server)
+ - [React on Client](./react-on-client)
