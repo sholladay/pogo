@@ -1,7 +1,7 @@
-import { React } from './dependencies.ts'
+import { React } from './dependencies.ts';
 
 const Counter = (props) => {
-    const { initialValue = 0 } = props
+    const { initialValue = 0 } = props;
     const [count, setCount] = React.useState(initialValue);
     const increaseCount = () => {
         setCount(count + 1);
